@@ -1,0 +1,87 @@
+{
+  "stages": [
+    {
+      "stage": 1,
+      "name": "금단기",
+      "day_from": 1,
+      "day_to": 7,
+      "summary": "보상 회로 갈망, 도파민 수용체 재조정 시작",
+      "events": [
+        {
+          "day": 3,
+          "fact": "뇌의 보상 회로가 기존 자극을 찾는 시기입니다. 도파민 수용체가 재조정을 시작하지만, 갈망이 가장 강한 구간입니다.",
+          "feeling": "가장 힘든 시기입니다. 이 갈망은 뇌가 새로운 기준선을 잡는 과정에서 생기는 것이고, 보통 72시간을 기점으로 급격히 줄어듭니다.",
+          "action": "갈망이 올 때 10분만 다른 행동을 해보세요. 대부분의 충동은 10~15분 내에 지나갑니다.",
+          "is_proactive": true,
+          "condition": null
+        },
+        {
+          "day": 7,
+          "fact": "도파민 수용체 재조정이 진행 중입니다. 뇌가 해당 자극 없이도 보상을 느끼는 방법을 다시 배우기 시작합니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "name": "습관 해체기",
+      "day_from": 8,
+      "day_to": 30,
+      "summary": "자동 반응 약화, 의식적 선택 증가, 정체감 가능",
+      "events": [
+        {
+          "day": 14,
+          "fact": "습관의 자동성(cue → routine → reward 루프)이 약해지기 시작합니다. 아직 완전히 끊어지진 않았지만, 의식적으로 선택할 수 있는 순간이 늘어납니다.",
+          "feeling": "아직 뭔가 달라진 게 없다고 느낄 수 있습니다. 습관 해체는 눈에 보이지 않지만, 갈망의 빈도나 강도가 1주차보다 줄었는지 비교해보세요.",
+          "action": null,
+          "is_proactive": true,
+          "condition": null
+        },
+        {
+          "day": 21,
+          "fact": "행동과학 연구에서 새로운 습관이 형성되기 시작하는 평균 시점입니다 (개인차 18~254일). '안 하는 것'이 점점 자연스러워지기 시작합니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 30,
+          "fact": "뇌의 전전두엽(자기 통제 영역)과 보상 회로 간의 균형이 회복되는 구간입니다.",
+          "feeling": "한 달을 했는데 극적인 변화가 없다고 느낄 수 있습니다. 습관 해체의 진짜 효과는 '안 하는 게 힘들지 않아지는 것'입니다. 1일차와 지금을 비교해보세요.",
+          "action": null,
+          "is_proactive": true,
+          "condition": null
+        }
+      ]
+    },
+    {
+      "stage": 3,
+      "name": "재편기",
+      "day_from": 31,
+      "day_to": 90,
+      "summary": "도파민 기저선 정상화, 습관 자동화, 새로운 패턴 정착",
+      "events": [
+        {
+          "day": 60,
+          "fact": "도파민 기저선이 정상화에 가까워집니다. 해당 자극 없이도 일상에서 만족감을 느끼는 능력이 회복됩니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 90,
+          "fact": "90일은 행동과학에서 습관이 '자동화'되는 데 충분한 기간으로 봅니다. 대부분의 재활/행동 변화 프로그램이 90일을 기준으로 삼는 이유입니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
+    }
+  ]
+}

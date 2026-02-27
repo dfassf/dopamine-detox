@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>restrainter — Phase 1 목업</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #3fd4c7;
+    --primary-dark: #2cb8ac;
+    --primary-light: #e6f9f7;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --red: #ef4444;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f0f0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+
+  h1.page-title {
+    font-size: 14px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: -20px;
+  }
+
+  .screen-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .screen-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .screen-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    letter-spacing: 0.5px;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: var(--white);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .status-bar .time {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .status-bar .icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .status-bar .icons span {
+    font-size: 12px;
+    color: var(--gray-900);
+  }
+
+  /* Content area */
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  /* ===== LANDING ===== */
+  .landing-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 32px;
+    text-align: center;
+  }
+
+  .landing-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--primary);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .landing-icon svg {
+    width: 44px;
+    height: 44px;
+    fill: var(--white);
+  }
+
+  .landing-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .landing-sub {
+    font-size: 15px;
+    color: var(--gray-500);
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .landing-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    letter-spacing: -0.3px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--white);
+  }
+  .btn-outline {
+    background: var(--white);
+    color: var(--gray-700);
+    border: 1.5px solid var(--gray-200);
+  }
+
+  .landing-footer {
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--gray-400);
+    line-height: 1.5;
+  }
+
+  /* ===== AUTH FORMS (signup, login) ===== */
+  .auth-header {
+    padding: 12px 24px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .auth-header .back {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--gray-50);
+  }
+  .auth-header .back svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--gray-700);
+    fill: none;
+    stroke-width: 2;
+  }
+  .auth-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+
+  .auth-form {
+    flex: 1;
+    padding: 8px 24px 32px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+    font-size: 15px;
+    color: var(--gray-900);
+    background: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input::placeholder {
+    color: var(--gray-400);
+  }
+  .form-group input:focus,
+  .form-group input.focused {
+    border-color: var(--primary);
+  }
+  .form-group .helper {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 6px;
+  }
+  .form-group .error-text {
+    font-size: 12px;
+    color: var(--red);
+    margin-top: 6px;
+  }
+  .form-group input.error {
+    border-color: var(--red);
+  }
+
+  .form-spacer {
+    flex: 1;
+  }
+
+  .form-bottom {
+    margin-top: auto;
+    padding-top: 16px;
+  }
+
+  .form-link {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--gray-500);
+  }
+  .form-link a {
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* ===== SIGNUP FILLED STATE ===== */
+  .input-filled {
+    color: var(--gray-900) !important;
+  }
+
+  /* ===== DISCLAIMER ===== */
+  .disclaimer {
+    padding: 16px 24px;
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-100);
+    flex-shrink: 0;
+  }
+  .disclaimer p {
+    font-size: 11px;
+    color: var(--gray-400);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  /* ===== ANNOTATIONS ===== */
+  .annotation {
+    position: absolute;
+    right: -200px;
+    width: 180px;
+    font-size: 11px;
+    color: var(--gray-500);
+    line-height: 1.5;
+    border-left: 2px solid var(--primary);
+    padding-left: 10px;
+  }
+
+  /* Section divider */
+  .section-divider {
+    width: 100%;
+    max-width: 1200px;
+    border: none;
+    border-top: 1px solid var(--gray-300);
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Phase 1 — 인증 화면</h1>
+
+<div class="screen-row">
+
+  <!-- ===== LANDING ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">랜딩 — /</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="landing-content">
+          <div class="landing-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          </div>
+          <div class="landing-title">restrainter</div>
+          <div class="landing-sub">
+            눈에 보이지 않는 변화를<br>
+            타임라인으로 보여드립니다
+          </div>
+          <div class="landing-buttons">
+            <button class="btn btn-primary">시작하기</button>
+            <button class="btn btn-outline">이미 계정이 있어요</button>
+          </div>
+          <div class="landing-footer">
+            가입 시 서비스 이용약관에 동의하게 됩니다
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIGNUP ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">회원가입 — /signup</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="auth-header">
+          <div class="back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <h2>회원가입</h2>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label>이메일</label>
+            <input type="text" placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" placeholder="8자 이상">
+          </div>
+          <div class="form-group">
+            <label>비밀번호 확인</label>
+            <input type="password" placeholder="비밀번호를 다시 입력해주세요">
+          </div>
+          <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" placeholder="2~20자">
+          </div>
+          <div class="form-spacer"></div>
+          <div class="form-bottom">
+            <button class="btn btn-primary" style="opacity: 0.4;">가입하기</button>
+            <div class="form-link">
+              이미 계정이 있으신가요? <a href="#">로그인</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIGNUP (filled + validation) ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">회원가입 (입력 중) — /signup</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:42</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="auth-header">
+          <div class="back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <h2>회원가입</h2>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label>이메일</label>
+            <input type="text" value="user@example.com" class="input-filled" style="border-color: var(--primary);">
+          </div>
+          <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" value="••••••••" class="input-filled">
+          </div>
+          <div class="form-group">
+            <label>비밀번호 확인</label>
+            <input type="password" value="•••••" class="input-filled error">
+            <div class="error-text">비밀번호가 일치하지 않습니다</div>
+          </div>
+          <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" value="금주왕" class="input-filled">
+          </div>
+          <div class="form-spacer"></div>
+          <div class="form-bottom">
+            <button class="btn btn-primary" style="opacity: 0.4;">가입하기</button>
+            <div class="form-link">
+              이미 계정이 있으신가요? <a href="#">로그인</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="section-divider">
+
+<div class="screen-row">
+
+  <!-- ===== LOGIN ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">로그인 — /login</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="auth-header">
+          <div class="back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <h2>로그인</h2>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label>이메일</label>
+            <input type="text" placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" placeholder="비밀번호를 입력해주세요">
+          </div>
+          <div class="form-spacer"></div>
+          <div class="form-bottom">
+            <button class="btn btn-primary" style="opacity: 0.4;">로그인</button>
+            <div class="form-link">
+              계정이 없으신가요? <a href="#">회원가입</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN (error) ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">로그인 (에러) — /login</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:42</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="auth-header">
+          <div class="back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <h2>로그인</h2>
+        </div>
+        <div class="auth-form">
+          <!-- Error toast -->
+          <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span style="font-size: 13px; color: #991b1b;">이메일 또는 비밀번호가 올바르지 않습니다</span>
+          </div>
+          <div class="form-group">
+            <label>이메일</label>
+            <input type="text" value="user@example.com" class="input-filled">
+          </div>
+          <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" value="••••••" class="input-filled">
+          </div>
+          <div class="form-spacer"></div>
+          <div class="form-bottom">
+            <button class="btn btn-primary">로그인</button>
+            <div class="form-link">
+              계정이 없으신가요? <a href="#">회원가입</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SIGNUP SUCCESS (email conflict) ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">회원가입 (이메일 중복) — /signup</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:42</span>
+        <div class="icons">
+          <span>&#9679;&#9679;&#9679;&#9679;</span>
+          <span>&#9608;</span>
+        </div>
+      </div>
+      <div class="content">
+        <div class="auth-header">
+          <div class="back">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <h2>회원가입</h2>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label>이메일</label>
+            <input type="text" value="user@example.com" class="input-filled error">
+            <div class="error-text">이미 가입된 이메일입니다</div>
+          </div>
+          <div class="form-group">
+            <label>비밀번호</label>
+            <input type="password" value="••••••••" class="input-filled">
+          </div>
+          <div class="form-group">
+            <label>비밀번호 확인</label>
+            <input type="password" value="••••••••" class="input-filled">
+          </div>
+          <div class="form-group">
+            <label>닉네임</label>
+            <input type="text" value="금주왕" class="input-filled">
+          </div>
+          <div class="form-spacer"></div>
+          <div class="form-bottom">
+            <button class="btn btn-primary" style="opacity: 0.4;">가입하기</button>
+            <div class="form-link">
+              이미 계정이 있으신가요? <a href="#">로그인</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

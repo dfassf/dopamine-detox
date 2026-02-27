@@ -1,0 +1,153 @@
+{
+  "stages": [
+    {
+      "stage": 1,
+      "name": "해독기",
+      "day_from": 1,
+      "day_to": 7,
+      "summary": "니코틴 배출, 금단 증상 피크, 심박수·혈압 정상화 시작",
+      "events": [
+        {
+          "day": 1,
+          "fact": "마지막 담배 후 20분이면 심박수가 정상으로 돌아옵니다. 12시간이면 혈중 일산화탄소 농도가 정상화됩니다.",
+          "feeling": "이미 변화가 시작됐습니다. 아직 체감하기 어렵지만, 세포 수준에서는 회복이 진행 중입니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 3,
+          "fact": "체내 니코틴이 거의 완전히 배출됩니다. 금단 증상(짜증, 불안, 두통, 집중력 저하)이 가장 심한 시기입니다.",
+          "feeling": "가장 힘든 72시간입니다. 이 금단 증상은 뇌의 니코틴 수용체가 재조정되는 과정이고, 여기만 넘기면 급격히 나아집니다.",
+          "action": "심호흡(4초 흡입-7초 유지-8초 내쉼)을 해보세요. 흡연 충동의 평균 지속 시간은 3~5분입니다.",
+          "is_proactive": true,
+          "condition": null
+        },
+        {
+          "day": 7,
+          "fact": "니코틴 수용체 하향 조절이 시작됩니다. 뇌가 니코틴 없이 작동하는 법을 다시 배우기 시작합니다.",
+          "feeling": null,
+          "action": "충동이 올 때 물을 한 잔 마시거나, 5분 산책을 해보세요. 대체 행동이 갈망을 줄입니다.",
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
+    },
+    {
+      "stage": 2,
+      "name": "초기 회복기",
+      "day_from": 8,
+      "day_to": 30,
+      "summary": "폐 섬모 회복, 혈액순환 개선, 미각·후각 복원",
+      "events": [
+        {
+          "day": 14,
+          "fact": "폐 섬모가 회복되기 시작합니다. 기도에 쌓인 이물질을 배출하는 기능이 돌아옵니다.",
+          "feeling": "기침이 늘 수 있는데, 이건 폐가 청소를 시작했다는 좋은 신호입니다.",
+          "action": "수분을 충분히 섭취하면 가래 배출에 도움이 됩니다.",
+          "is_proactive": true,
+          "condition": null
+        },
+        {
+          "day": 21,
+          "fact": "미각과 후각이 정상화되기 시작합니다. 니코틴이 둔하게 만들었던 감각 신경이 회복됩니다.",
+          "feeling": "음식 맛이 예전보다 진하게 느껴질 수 있습니다. 감각이 돌아오는 겁니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 30,
+          "fact": "폐 기능이 최대 30%까지 개선되는 구간입니다. 계단 오를 때 숨이 덜 차기 시작합니다.",
+          "feeling": "한 달이나 했는데 극적인 변화가 없다고 느낄 수 있습니다. 폐 회복은 서서히 진행되고, 여기서부터 체감이 시작됩니다.",
+          "action": null,
+          "is_proactive": true,
+          "condition": null
+        }
+      ]
+    },
+    {
+      "stage": 3,
+      "name": "구조적 회복기",
+      "day_from": 31,
+      "day_to": 90,
+      "summary": "혈관 탄력 회복, 면역 기능 정상화, 체력 개선 체감",
+      "events": [
+        {
+          "day": 45,
+          "fact": "혈관 내피 기능이 회복되기 시작합니다. 혈관 탄력성이 돌아오면서 혈액순환이 개선됩니다.",
+          "feeling": "피부가 나아지는 것을 느낄 수 있습니다. 혈액순환 개선으로 안색이 밝아지고 피부 탄력이 돌아옵니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 60,
+          "fact": "기관지 섬모의 기능이 상당 부분 회복됩니다. 감기에 덜 걸리고, 호흡기 감염 위험이 크게 줄어듭니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 90,
+          "fact": "폐 기능이 금연 전 대비 크게 개선됩니다. 뇌의 니코틴 수용체가 정상 밀도로 돌아옵니다.",
+          "feeling": "3개월. 니코틴 의존에서 생물학적으로 벗어난 상태입니다. 충동이 오더라도 습관의 잔상이지, 화학적 갈망이 아닙니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
+    },
+    {
+      "stage": 4,
+      "name": "장기 회복기",
+      "day_from": 91,
+      "day_to": 180,
+      "summary": "심혈관 위험도 감소, 폐 기능 정상화, 면역력 안정",
+      "events": [
+        {
+          "day": 120,
+          "fact": "심장 질환 위험이 흡연자 대비 크게 감소합니다. 혈압과 심박수가 안정적으로 유지됩니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 180,
+          "fact": "폐 기능이 상당히 정상화됩니다. 기침과 가래가 현저히 줄고, 운동 시 호흡이 편안해집니다.",
+          "feeling": "6개월. 이제 '금연 중'이 아니라 '비흡연자'에 가까운 상태입니다.",
+          "action": "폐 기능 검사를 받아보시면 수치로 변화를 확인할 수 있습니다.",
+          "is_proactive": false,
+          "condition": { "smoking_years_gte": 5 }
+        }
+      ]
+    },
+    {
+      "stage": 5,
+      "name": "안정기",
+      "day_from": 181,
+      "day_to": 365,
+      "summary": "암 위험도 감소 시작, 새로운 기준선 확립",
+      "events": [
+        {
+          "day": 270,
+          "fact": "구강암, 후두암, 식도암 위험이 흡연자 대비 절반으로 줄어드는 구간에 접어듭니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 365,
+          "fact": "1년. 관상동맥 질환 위험이 흡연자 대비 절반으로 줄어듭니다. 몸이 구조적으로 다른 상태입니다.",
+          "feeling": "1년 전의 자신과는 세포 수준에서 다른 몸입니다.",
+          "action": "종합검진을 받아보세요. 금연 전과 비교하면 변화가 명확히 보입니다.",
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
+    }
+  ]
+}

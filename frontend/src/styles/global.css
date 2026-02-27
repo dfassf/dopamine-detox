@@ -1,0 +1,167 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #3fd4c7;
+  --primary-dark: #2cb8ac;
+  --primary-light: #e6f9f7;
+  --white: #ffffff;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-900: #111827;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --green: #10b981;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--gray-50);
+  color: var(--gray-900);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  letter-spacing: -0.3px;
+  transition: opacity 0.2s;
+}
+.btn:active { opacity: 0.8; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: var(--white); }
+.btn-outline { background: var(--white); color: var(--gray-700); border: 1.5px solid var(--gray-200); }
+
+/* ===== Form ===== */
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 8px;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  font-size: 15px;
+  color: var(--gray-900);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.form-group input::placeholder { color: var(--gray-400); }
+.form-group input:focus { border-color: var(--primary); }
+.form-group input.error { border-color: var(--red); }
+.form-group .helper { font-size: 12px; color: var(--gray-400); margin-top: 6px; }
+.form-group .error-text { font-size: 12px; color: var(--red); margin-top: 6px; }
+
+/* ===== Error toast ===== */
+.error-toast {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #991b1b;
+}
+
+/* ===== Link ===== */
+.form-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--gray-500);
+}
+.form-link a {
+  color: var(--primary-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ===== Screen layout ===== */
+.screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  max-width: 430px;
+  margin: 0 auto;
+}
+.screen--gray { background: var(--gray-50); }
+.screen-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ===== Auth header ===== */
+.auth-header {
+  padding: 12px 24px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.auth-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.back-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--gray-50);
+  border: none;
+  cursor: pointer;
+}
+
+/* ===== App header ===== */
+.app-header {
+  background: var(--white);
+  padding: 8px 24px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-900);
+  letter-spacing: -0.5px;
+}
+.app-header .back-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.app-header .header-right {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--primary-dark);
+}

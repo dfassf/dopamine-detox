@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>restrainter — Phase 2 목업</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #3fd4c7;
+    --primary-dark: #2cb8ac;
+    --primary-light: #e6f9f7;
+    --white: #ffffff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --red: #ef4444;
+    --orange: #f59e0b;
+    --green: #10b981;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f0f0;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+
+  h1.page-title {
+    font-size: 14px;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: -20px;
+  }
+
+  .screen-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .screen-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .screen-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-600);
+    letter-spacing: 0.5px;
+  }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    background: var(--gray-50);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Status bar */
+  .status-bar {
+    height: 54px;
+    padding: 14px 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    background: var(--white);
+  }
+  .status-bar .time {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .status-bar .icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .status-bar .icons span {
+    font-size: 12px;
+    color: var(--gray-900);
+  }
+
+  /* App header */
+  .app-header {
+    background: var(--white);
+    padding: 8px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .app-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gray-900);
+    letter-spacing: -0.5px;
+  }
+  .app-header .back-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .app-header .back-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background: var(--gray-50);
+  }
+  .app-header .back-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--gray-700);
+    fill: none;
+    stroke-width: 2;
+  }
+  .app-header .header-right {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+
+  /* Content area */
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 0 0;
+  }
+
+  /* Tab bar */
+  .tab-bar {
+    height: 83px;
+    background: var(--white);
+    border-top: 1px solid var(--gray-100);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 10px;
+    flex-shrink: 0;
+  }
+  .tab-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 72px;
+  }
+  .tab-item svg {
+    width: 24px;
+    height: 24px;
+  }
+  .tab-item .tab-label {
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .tab-item.active svg { fill: var(--primary); stroke: var(--primary); }
+  .tab-item.active .tab-label { color: var(--primary); font-weight: 600; }
+  .tab-item.inactive svg { fill: none; stroke: var(--gray-400); }
+  .tab-item.inactive .tab-label { color: var(--gray-400); }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--white);
+    border-radius: 16px;
+    margin: 0 16px 12px;
+    padding: 20px;
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .card-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== TODAY MESSAGE ===== */
+  .today-msg {
+    background: var(--white);
+    border-radius: 16px;
+    margin: 12px 16px;
+    padding: 20px;
+    border-left: 4px solid var(--primary);
+  }
+  .today-msg .msg-tag {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  .today-msg .msg-fact {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .today-msg .msg-feeling {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .today-msg .msg-action {
+    font-size: 13px;
+    color: var(--primary-dark);
+    line-height: 1.5;
+    background: var(--primary-light);
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  /* ===== ABSTINENCE CARD ===== */
+  .abs-card {
+    background: var(--white);
+    border-radius: 16px;
+    margin: 0 16px 10px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .abs-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .abs-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .abs-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .abs-icon.alcohol { background: #fef3c7; }
+  .abs-icon.smoking { background: #fee2e2; }
+  .abs-card-info h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .abs-card-info .abs-day {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+  }
+  .abs-card-stage {
+    font-size: 12px;
+    color: var(--gray-500);
+  }
+  .abs-card-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .abs-card-progress .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gray-600);
+  }
+  .progress-bar {
+    height: 8px;
+    background: var(--gray-100);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 4px;
+  }
+  .abs-card-arrow {
+    color: var(--gray-300);
+    font-size: 20px;
+  }
+
+  /* ===== CHECKIN CARD ===== */
+  .checkin-card {
+    background: var(--white);
+    border-radius: 16px;
+    margin: 0 16px 12px;
+    padding: 18px 20px;
+    border: 1.5px dashed var(--primary);
+  }
+  .checkin-card h4 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+  }
+  .checkin-card p {
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .checkin-card .btn-sm {
+    display: inline-block;
+    background: var(--primary);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ===== ADD BUTTON ===== */
+  .add-btn {
+    margin: 4px 16px 16px;
+    padding: 14px;
+    border: 1.5px dashed var(--gray-300);
+    border-radius: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+
+  /* ===== SECTION LABEL ===== */
+  .section-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-500);
+    margin: 16px 20px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== TIMELINE DETAIL ===== */
+  .stage-accordion {
+    margin: 0 16px 8px;
+    background: var(--white);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .stage-header {
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stage-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stage-badge.completed { background: var(--primary); color: var(--white); }
+  .stage-badge.current { background: var(--primary); color: var(--white); }
+  .stage-badge.upcoming { background: var(--gray-200); color: var(--gray-500); }
+  .stage-header-text { flex: 1; }
+  .stage-header-text h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .stage-header-text .stage-range {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+  .stage-check { color: var(--primary); font-size: 18px; }
+  .stage-chevron { color: var(--gray-300); font-size: 16px; }
+
+  /* Expanded stage */
+  .stage-body {
+    padding: 0 18px 18px;
+  }
+  .stage-progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+  .stage-progress-bar {
+    height: 6px;
+    background: var(--gray-100);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 18px;
+  }
+  .stage-progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+  }
+
+  /* Timeline events */
+  .timeline-event {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .timeline-event:last-child { margin-bottom: 0; }
+  .event-dot-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 20px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .event-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .event-dot.past { background: var(--primary); }
+  .event-dot.current { background: var(--primary); box-shadow: 0 0 0 4px rgba(63, 212, 199, 0.2); }
+  .event-dot.upcoming { background: var(--gray-300); }
+  .event-line {
+    width: 2px;
+    flex: 1;
+    margin-top: 4px;
+  }
+  .event-line.past { background: var(--primary); }
+  .event-line.current { background: var(--gray-200); }
+  .event-line.upcoming { background: var(--gray-200); }
+  .event-content { flex: 1; }
+  .event-day {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--gray-400);
+    margin-bottom: 4px;
+  }
+  .event-day.current { color: var(--primary-dark); }
+  .event-fact {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .event-feeling {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .event-action {
+    font-size: 12px;
+    color: var(--primary-dark);
+    background: var(--primary-light);
+    padding: 8px 10px;
+    border-radius: 8px;
+    line-height: 1.5;
+  }
+
+  /* ===== REGISTRATION FORM ===== */
+  .reg-content {
+    padding: 8px 24px;
+  }
+  .form-group {
+    margin-bottom: 20px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 8px;
+  }
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+    font-size: 15px;
+    color: var(--gray-900);
+    background: var(--white);
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .form-group input::placeholder { color: var(--gray-400); }
+  .form-group .helper {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 6px;
+  }
+
+  /* Preset selector */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0 24px 20px;
+  }
+  .preset-item {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 18px 14px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .preset-item.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+  }
+  .preset-item .preset-emoji {
+    font-size: 28px;
+  }
+  .preset-item .preset-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .preset-item.selected .preset-name {
+    color: var(--primary-dark);
+  }
+
+  /* ===== CHECKIN SCREEN ===== */
+  .checkin-question {
+    background: var(--white);
+    border-radius: 14px;
+    margin: 0 16px 12px;
+    padding: 18px 20px;
+  }
+  .checkin-question h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 14px;
+  }
+  .checkin-options {
+    display: flex;
+    gap: 8px;
+  }
+  .checkin-opt {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    color: var(--gray-700);
+  }
+  .checkin-opt.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+  .checkin-opt-3 {
+    flex: 1;
+    padding: 12px 8px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--gray-200);
+    background: var(--white);
+    color: var(--gray-700);
+  }
+  .checkin-opt-3.selected {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary-dark);
+  }
+
+  /* ===== MYPAGE ===== */
+  .my-profile {
+    background: var(--white);
+    border-radius: 16px;
+    margin: 12px 16px;
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .my-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    flex-shrink: 0;
+  }
+  .my-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .my-info p {
+    font-size: 13px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+
+  .my-menu {
+    margin: 0 16px;
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .my-menu-item {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .my-menu-item:last-child { border-bottom: none; }
+  .my-menu-item span {
+    font-size: 15px;
+    color: var(--gray-900);
+  }
+  .my-menu-item .chevron {
+    color: var(--gray-300);
+    font-size: 16px;
+  }
+  .my-menu-item.danger span {
+    color: var(--red);
+  }
+
+  .my-abs-list {
+    margin: 16px 16px 0;
+  }
+  .my-abs-item {
+    background: var(--white);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .my-abs-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .my-abs-item-left h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900);
+  }
+  .my-abs-item-left p {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin-top: 2px;
+  }
+  .my-abs-delete {
+    font-size: 13px;
+    color: var(--red);
+    font-weight: 500;
+  }
+
+  /* Bottom submit button */
+  .bottom-btn-area {
+    padding: 12px 24px 0;
+    background: var(--white);
+    flex-shrink: 0;
+  }
+  .btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    letter-spacing: -0.3px;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: var(--white);
+  }
+
+  /* Empty state */
+  .empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+  }
+  .empty-state .empty-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--gray-100);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+  .empty-state h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 8px;
+  }
+  .empty-state p {
+    font-size: 14px;
+    color: var(--gray-400);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .empty-state .btn {
+    width: auto;
+    padding: 14px 32px;
+  }
+
+  /* Section divider */
+  .section-divider {
+    width: 100%;
+    max-width: 1200px;
+    border: none;
+    border-top: 1px solid #d1d5db;
+    margin: 20px 0;
+  }
+
+  /* Disclaimer */
+  .disclaimer-bar {
+    padding: 8px 16px;
+    background: var(--gray-100);
+    flex-shrink: 0;
+  }
+  .disclaimer-bar p {
+    font-size: 10px;
+    color: var(--gray-400);
+    text-align: center;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Phase 2 — 홈 탭</h1>
+
+<div class="screen-row">
+
+  <!-- ===== DASHBOARD: EMPTY ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">대시보드 (최초) — /dashboard</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <h1>restrainter</h1>
+      </div>
+      <div class="content" style="display:flex; flex-direction:column;">
+        <div class="empty-state">
+          <div class="empty-icon">&#127793;</div>
+          <h3>아직 시작한 금욕이 없어요</h3>
+          <p>금욕을 등록하면<br>나만의 타임라인이 생성됩니다</p>
+          <button class="btn btn-primary">금욕 시작하기</button>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+          <span class="tab-label">홈</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="tab-label">타임라인</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">마이</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD: ACTIVE ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">대시보드 (활성) — /dashboard</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <h1>restrainter</h1>
+      </div>
+      <div class="content">
+        <!-- Today message -->
+        <div class="today-msg">
+          <div class="msg-tag">D+32 금주</div>
+          <div class="msg-fact">인슐린 감수성이 회복되기 시작하고, 간의 글리코겐 저장 능력이 정상화됩니다.</div>
+          <div class="msg-feeling">체중이 안 빠진다고 느끼실 수 있습니다. 이건 체성분이 재배치되는 구간이라 정상입니다.</div>
+          <div class="msg-action">체중 대신 허리둘레를 재보세요. 아침 기상 직후, 배꼽 기준으로.</div>
+        </div>
+
+        <!-- Section: My abstinences -->
+        <div class="section-label">내 금욕</div>
+
+        <div class="abs-card">
+          <div class="abs-card-top">
+            <div class="abs-card-left">
+              <div class="abs-icon alcohol">&#127862;</div>
+              <div class="abs-card-info">
+                <h4>금주</h4>
+                <div class="abs-card-stage">3단계: 재배치 구간</div>
+              </div>
+            </div>
+            <div class="abs-card-info" style="text-align:right;">
+              <div class="abs-day">D+32</div>
+            </div>
+          </div>
+          <div class="abs-card-progress">
+            <div class="progress-label">
+              <span>5단계 중 3단계</span>
+              <span>10일 후 다음 단계</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width: 52%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="abs-card">
+          <div class="abs-card-top">
+            <div class="abs-card-left">
+              <div class="abs-icon smoking">&#128684;</div>
+              <div class="abs-card-info">
+                <h4>금연</h4>
+                <div class="abs-card-stage">2단계: 초기 회복기</div>
+              </div>
+            </div>
+            <div class="abs-card-info" style="text-align:right;">
+              <div class="abs-day">D+14</div>
+            </div>
+          </div>
+          <div class="abs-card-progress">
+            <div class="progress-label">
+              <span>5단계 중 2단계</span>
+              <span>7일 후 다음 단계</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width: 35%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Checkin card -->
+        <div class="checkin-card">
+          <h4>주간 체크인 도착!</h4>
+          <p>이번 주 상태를 알려주시면 타임라인을 업데이트해요</p>
+          <button class="btn-sm">체크인하기</button>
+        </div>
+
+        <div class="add-btn">+ 금욕 추가</div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+          <span class="tab-label">홈</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="tab-label">타임라인</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">마이</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="section-divider">
+<h1 class="page-title">Phase 2 — 타임라인 탭</h1>
+
+<div class="screen-row">
+
+  <!-- ===== TIMELINE DETAIL ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">타임라인 상세 — /timeline/1</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <div class="back-header">
+          <div class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <h1 style="font-size:18px;">금주 타임라인</h1>
+        </div>
+        <div class="header-right">D+32</div>
+      </div>
+      <div class="content">
+        <!-- Stage 1: completed -->
+        <div class="stage-accordion">
+          <div class="stage-header">
+            <div class="stage-badge completed">1</div>
+            <div class="stage-header-text">
+              <h4>해독기</h4>
+              <div class="stage-range">D+1 ~ D+7</div>
+            </div>
+            <span class="stage-check">&#10003;</span>
+          </div>
+        </div>
+
+        <!-- Stage 2: completed -->
+        <div class="stage-accordion">
+          <div class="stage-header">
+            <div class="stage-badge completed">2</div>
+            <div class="stage-header-text">
+              <h4>초기 회복기</h4>
+              <div class="stage-range">D+8 ~ D+21</div>
+            </div>
+            <span class="stage-check">&#10003;</span>
+          </div>
+        </div>
+
+        <!-- Stage 3: current (expanded) -->
+        <div class="stage-accordion" style="border: 1.5px solid var(--primary);">
+          <div class="stage-header">
+            <div class="stage-badge current">3</div>
+            <div class="stage-header-text">
+              <h4>재배치 구간</h4>
+              <div class="stage-range">D+22 ~ D+42</div>
+            </div>
+          </div>
+          <div class="stage-body">
+            <div class="stage-progress-info">
+              <span>현재 D+32</span>
+              <span>10일 후 4단계</span>
+            </div>
+            <div class="stage-progress-bar">
+              <div class="stage-progress-bar-fill" style="width: 52%;"></div>
+            </div>
+
+            <!-- Event: D+28 (past) -->
+            <div class="timeline-event">
+              <div class="event-dot-col">
+                <div class="event-dot past"></div>
+                <div class="event-line past"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-day">D+28</div>
+                <div class="event-fact">체성분 재배치 시작</div>
+                <div class="event-feeling">체중이 안 빠진다고 느끼실 수 있습니다. 정상입니다.</div>
+                <div class="event-action">체중 대신 허리둘레를 재보세요</div>
+              </div>
+            </div>
+
+            <!-- Event: D+35 (current) -->
+            <div class="timeline-event">
+              <div class="event-dot-col">
+                <div class="event-dot current"></div>
+                <div class="event-line current"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-day current">D+35 &#8592; 현재</div>
+                <div class="event-fact">테스토스테론 회복 신호가 나타나기 시작합니다</div>
+                <div class="event-action">운동 중 펌핑이 예전보다 잘 되는 느낌이 있다면 호르몬 회복의 신호입니다</div>
+              </div>
+            </div>
+
+            <!-- Event: D+42 (upcoming) -->
+            <div class="timeline-event">
+              <div class="event-dot-col">
+                <div class="event-dot upcoming"></div>
+              </div>
+              <div class="event-content">
+                <div class="event-day">D+42</div>
+                <div class="event-fact" style="color: var(--gray-500); font-weight: 500;">6주 시점 자가 체크</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stage 4: upcoming -->
+        <div class="stage-accordion">
+          <div class="stage-header">
+            <div class="stage-badge upcoming">4</div>
+            <div class="stage-header-text">
+              <h4 style="color: var(--gray-500);">본격 변화기</h4>
+              <div class="stage-range">D+43 ~ D+90</div>
+            </div>
+            <span class="stage-chevron">&#8250;</span>
+          </div>
+        </div>
+
+        <!-- Stage 5: upcoming -->
+        <div class="stage-accordion">
+          <div class="stage-header">
+            <div class="stage-badge upcoming">5</div>
+            <div class="stage-header-text">
+              <h4 style="color: var(--gray-500);">안정기</h4>
+              <div class="stage-range">D+91 ~ D+180</div>
+            </div>
+            <span class="stage-chevron">&#8250;</span>
+          </div>
+        </div>
+
+        <div style="height: 16px;"></div>
+      </div>
+
+      <div class="disclaimer-bar">
+        <p>이 정보는 일반적인 건강 정보이며, 의학적 진단이나 처방이 아닙니다.</p>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+          <span class="tab-label">홈</span>
+        </div>
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="tab-label">타임라인</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">마이</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TIMELINE LIST (multi) ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">타임라인 목록 (2개+) — /timeline</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <h1>타임라인</h1>
+      </div>
+      <div class="content">
+        <div class="section-label" style="margin-top: 8px;">진행 중</div>
+
+        <div class="abs-card" style="cursor: pointer;">
+          <div class="abs-card-top">
+            <div class="abs-card-left">
+              <div class="abs-icon alcohol">&#127862;</div>
+              <div class="abs-card-info">
+                <h4>금주</h4>
+                <div class="abs-card-stage">3단계: 재배치 구간</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="abs-card-info" style="text-align:right;">
+                <div class="abs-day">D+32</div>
+              </div>
+              <span class="abs-card-arrow">&#8250;</span>
+            </div>
+          </div>
+          <div class="abs-card-progress">
+            <div class="progress-label">
+              <span>5단계 중 3단계</span>
+              <span>10일 후 다음 단계</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width: 52%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="abs-card" style="cursor: pointer;">
+          <div class="abs-card-top">
+            <div class="abs-card-left">
+              <div class="abs-icon smoking">&#128684;</div>
+              <div class="abs-card-info">
+                <h4>금연</h4>
+                <div class="abs-card-stage">2단계: 초기 회복기</div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="abs-card-info" style="text-align:right;">
+                <div class="abs-day">D+14</div>
+              </div>
+              <span class="abs-card-arrow">&#8250;</span>
+            </div>
+          </div>
+          <div class="abs-card-progress">
+            <div class="progress-label">
+              <span>5단계 중 2단계</span>
+              <span>7일 후 다음 단계</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" style="width: 35%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tab-bar">
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+          <span class="tab-label">홈</span>
+        </div>
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="tab-label">타임라인</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">마이</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="section-divider">
+<h1 class="page-title">Phase 2 — 금욕 등록</h1>
+
+<div class="screen-row">
+
+  <!-- ===== REGISTRATION: type select ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">종류 선택 — /abstinence/new</span>
+    <div class="phone">
+      <div class="status-bar" style="background: var(--white);">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <div class="back-header">
+          <div class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <h1 style="font-size:18px;">금욕 시작하기</h1>
+        </div>
+      </div>
+      <div class="content" style="background: var(--white);">
+        <div class="section-label" style="margin-top: 8px; margin-bottom: 12px;">무엇을 절제하시나요?</div>
+        <div class="preset-grid">
+          <div class="preset-item selected">
+            <div class="preset-emoji">&#127862;</div>
+            <div class="preset-name">금주</div>
+          </div>
+          <div class="preset-item">
+            <div class="preset-emoji">&#128684;</div>
+            <div class="preset-name">금연</div>
+          </div>
+          <div class="preset-item">
+            <div class="preset-emoji">&#129367;</div>
+            <div class="preset-name">식단</div>
+          </div>
+          <div class="preset-item">
+            <div class="preset-emoji">&#9998;&#65039;</div>
+            <div class="preset-name">커스텀</div>
+          </div>
+        </div>
+
+        <div class="reg-content">
+          <div class="form-group">
+            <label>시작일</label>
+            <input type="text" value="2026-01-26" style="color: var(--gray-900);">
+          </div>
+          <div class="form-group">
+            <label>생년</label>
+            <input type="text" placeholder="예: 1989">
+          </div>
+          <div class="form-group">
+            <label>성별</label>
+            <select style="color: var(--gray-400);"><option>선택해주세요</option></select>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-btn-area">
+        <button class="btn btn-primary" style="opacity: 0.4;">다음</button>
+        <div style="height: 32px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REGISTRATION: detail (alcohol) ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">금주 상세 입력 — /abstinence/new</span>
+    <div class="phone">
+      <div class="status-bar" style="background: var(--white);">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <div class="back-header">
+          <div class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <h1 style="font-size:18px;">금주 상세 정보</h1>
+        </div>
+        <div class="header-right" style="font-size:13px; color: var(--gray-400);">2/2</div>
+      </div>
+      <div class="content" style="background: var(--white);">
+        <div class="reg-content">
+          <div style="background: var(--primary-light); border-radius: 12px; padding: 14px 16px; margin-bottom: 24px;">
+            <div style="font-size: 13px; color: var(--primary-dark); font-weight: 600;">개인화 타임라인 생성에 사용됩니다</div>
+            <div style="font-size: 12px; color: var(--gray-500); margin-top: 4px;">정확할수록 타임라인이 더 정확해집니다</div>
+          </div>
+          <div class="form-group">
+            <label>체중 (kg)</label>
+            <input type="text" value="87" style="color: var(--gray-900);">
+          </div>
+          <div class="form-group">
+            <label>키 (cm)</label>
+            <input type="text" value="175" style="color: var(--gray-900);">
+          </div>
+          <div class="form-group">
+            <label>음주 기간</label>
+            <input type="text" value="10년" style="color: var(--gray-900);">
+          </div>
+          <div class="form-group">
+            <label>음주 빈도</label>
+            <select style="color: var(--gray-900);"><option>주 3~5회</option></select>
+          </div>
+          <div class="form-group">
+            <label>음주량</label>
+            <input type="text" value="소주 2병" style="color: var(--gray-900);">
+            <div class="helper">대략적인 1회 음주량</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-btn-area">
+        <button class="btn btn-primary">타임라인 생성하기</button>
+        <div style="height: 32px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="section-divider">
+<h1 class="page-title">Phase 2 — 주간 체크인</h1>
+
+<div class="screen-row">
+
+  <!-- ===== CHECKIN ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">주간 체크인 — /abstinence/1/checkin</span>
+    <div class="phone">
+      <div class="status-bar" style="background: var(--white);">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <div class="back-header">
+          <div class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <h1 style="font-size:18px;">주간 체크인</h1>
+        </div>
+        <div class="header-right" style="font-size:13px; color: var(--gray-400);">금주 5주차</div>
+      </div>
+      <div class="content">
+        <div style="padding: 8px 20px 16px; font-size: 14px; color: var(--gray-500); line-height: 1.5;">
+          이번 주 상태를 알려주세요.<br>타임라인을 더 정확하게 조정해드립니다.
+        </div>
+
+        <div class="checkin-question">
+          <h4>이번 주 운동 했나요?</h4>
+          <div class="checkin-options">
+            <div class="checkin-opt selected">네</div>
+            <div class="checkin-opt">아니오</div>
+          </div>
+        </div>
+
+        <div class="checkin-question">
+          <h4>수면은 어땠나요?</h4>
+          <div class="checkin-options">
+            <div class="checkin-opt-3 selected">좋음</div>
+            <div class="checkin-opt-3">보통</div>
+            <div class="checkin-opt-3">나쁨</div>
+          </div>
+        </div>
+
+        <div class="checkin-question">
+          <h4>식사는 규칙적이었나요?</h4>
+          <div class="checkin-options">
+            <div class="checkin-opt selected">네</div>
+            <div class="checkin-opt">아니오</div>
+          </div>
+        </div>
+
+        <div class="checkin-question">
+          <h4>음주 충동이 있었나요?</h4>
+          <div class="checkin-options">
+            <div class="checkin-opt">네</div>
+            <div class="checkin-opt selected">아니오</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-btn-area">
+        <button class="btn btn-primary">체크인 완료</button>
+        <div style="height: 32px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CHECKIN RESULT ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">체크인 완료 — 결과</span>
+    <div class="phone">
+      <div class="status-bar" style="background: var(--white);">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <div class="back-header">
+          <div class="back-btn"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+          <h1 style="font-size:18px;">체크인 결과</h1>
+        </div>
+      </div>
+      <div class="content" style="display: flex; flex-direction: column;">
+        <div style="padding: 40px 24px; text-align: center;">
+          <div style="width: 72px; height: 72px; background: var(--primary-light); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 36px;">&#10003;</div>
+          <h3 style="font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px;">체크인 완료!</h3>
+          <p style="font-size: 14px; color: var(--gray-500); line-height: 1.6;">타임라인이 업데이트되었습니다</p>
+        </div>
+
+        <div class="card" style="margin: 0 16px; border: 1px solid var(--gray-100);">
+          <h4 style="font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 14px;">조정 내역</h4>
+          <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
+            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0;"></div>
+            <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">운동 효과 반영: <strong>본격 변화기</strong> 진입이 3일 앞당겨졌습니다</div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;">
+            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-top: 6px; flex-shrink: 0;"></div>
+            <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">양호한 수면: 간 회복 속도가 정상 범위입니다</div>
+          </div>
+          <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <div style="width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-top: 6px; flex-shrink: 0;"></div>
+            <div style="font-size: 14px; color: var(--gray-700); line-height: 1.5;">충동 없음: 금단 진행이 순조롭습니다</div>
+          </div>
+        </div>
+
+        <div style="padding: 20px 24px; text-align: center;">
+          <span style="font-size: 13px; color: var(--gray-400);">다음 체크인: 3월 6일</span>
+        </div>
+
+        <div style="flex: 1;"></div>
+      </div>
+      <div class="bottom-btn-area">
+        <button class="btn btn-primary">타임라인 보기</button>
+        <div style="height: 32px;"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<hr class="section-divider">
+<h1 class="page-title">Phase 2 — 마이 탭</h1>
+
+<div class="screen-row">
+
+  <!-- ===== MY PAGE ===== -->
+  <div class="screen-wrapper">
+    <span class="screen-label">마이페이지 — /mypage</span>
+    <div class="phone">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="icons"><span>&#9679;&#9679;&#9679;&#9679;</span> <span>&#9608;</span></div>
+      </div>
+      <div class="app-header">
+        <h1>마이페이지</h1>
+      </div>
+      <div class="content">
+        <!-- Profile -->
+        <div class="my-profile">
+          <div class="my-avatar">금</div>
+          <div class="my-info">
+            <h3>금주왕</h3>
+            <p>user@example.com</p>
+          </div>
+        </div>
+
+        <!-- Abstinence management -->
+        <div class="section-label">내 금욕 관리</div>
+        <div class="my-abs-list">
+          <div class="my-abs-item">
+            <div class="my-abs-item-left">
+              <div class="abs-icon alcohol" style="width:36px; height:36px; border-radius:10px; font-size:18px;">&#127862;</div>
+              <div>
+                <h4>금주</h4>
+                <p>D+32 · 2026.01.26 ~</p>
+              </div>
+            </div>
+            <span class="my-abs-delete">삭제</span>
+          </div>
+          <div class="my-abs-item">
+            <div class="my-abs-item-left">
+              <div class="abs-icon smoking" style="width:36px; height:36px; border-radius:10px; font-size:18px;">&#128684;</div>
+              <div>
+                <h4>금연</h4>
+                <p>D+14 · 2026.02.13 ~</p>
+              </div>
+            </div>
+            <span class="my-abs-delete">삭제</span>
+          </div>
+        </div>
+
+        <!-- Menu -->
+        <div style="height: 20px;"></div>
+        <div class="section-label">설정</div>
+        <div class="my-menu" style="margin-top: 8px;">
+          <div class="my-menu-item">
+            <span>알림 설정</span>
+            <span class="chevron">&#8250;</span>
+          </div>
+          <div class="my-menu-item">
+            <span>서비스 이용약관</span>
+            <span class="chevron">&#8250;</span>
+          </div>
+          <div class="my-menu-item">
+            <span>개인정보처리방침</span>
+            <span class="chevron">&#8250;</span>
+          </div>
+          <div class="my-menu-item">
+            <span>앱 버전</span>
+            <span style="font-size: 14px; color: var(--gray-400);">0.1.0</span>
+          </div>
+        </div>
+
+        <div style="height: 12px;"></div>
+        <div class="my-menu">
+          <div class="my-menu-item danger">
+            <span>로그아웃</span>
+            <span class="chevron" style="color: var(--red);">&#8250;</span>
+          </div>
+        </div>
+
+        <div style="height: 24px;"></div>
+      </div>
+
+      <div class="tab-bar">
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
+          <span class="tab-label">홈</span>
+        </div>
+        <div class="tab-item inactive">
+          <svg viewBox="0 0 24 24" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="tab-label">타임라인</span>
+        </div>
+        <div class="tab-item active">
+          <svg viewBox="0 0 24 24" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="tab-label">마이</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
