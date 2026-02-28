@@ -1,7 +1,7 @@
 import api from "./client";
 
 export interface TodayMessage {
-  abstinence_id: number;
+  abstinence_id: string;
   abstinence_type: string;
   current_day: number;
   fact: string;
@@ -11,7 +11,7 @@ export interface TodayMessage {
 }
 
 export interface DashboardAbstinence {
-  id: number;
+  id: string;
   type: string;
   label: string;
   current_day: number;

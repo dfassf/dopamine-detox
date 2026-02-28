@@ -1,0 +1,41 @@
+{
+  "questions": [
+    {
+      "key": "craving",
+      "title": "이번 주 도파민(음주 욕구)이 올라왔나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    },
+    {
+      "key": "sleep_quality",
+      "title": "수면은 어땠나요?",
+      "type": "select",
+      "options": [
+        { "label": "좋음", "value": "good" },
+        { "label": "보통", "value": "normal" },
+        { "label": "나쁨", "value": "bad" }
+      ]
+    },
+    {
+      "key": "exercise",
+      "title": "운동을 했나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    },
+    {
+      "key": "exposure",
+      "title": "음주 자리에 노출됐나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    }
+  ]
+}

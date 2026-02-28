@@ -1,6 +1,7 @@
+import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, Date, ForeignKey, Integer, String, Text, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -9,7 +10,7 @@ from app.database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(String, nullable=False)
     nickname: Mapped[str] = mapped_column(String, nullable=False)
@@ -23,8 +24,8 @@ class User(Base):
 class Abstinence(Base):
     __tablename__ = "abstinences"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     type: Mapped[str] = mapped_column(String, nullable=False)
     label: Mapped[str] = mapped_column(String, nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
@@ -40,7 +41,7 @@ class TimelineStage(Base):
     __tablename__ = "timeline_stages"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    abstinence_id: Mapped[int] = mapped_column(ForeignKey("abstinences.id", ondelete="CASCADE"), nullable=False)
+    abstinence_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("abstinences.id", ondelete="CASCADE"), nullable=False)
     stage_num: Mapped[int] = mapped_column(Integer, nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     day_from: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -69,12 +70,9 @@ class Checkin(Base):
     __tablename__ = "checkins"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    abstinence_id: Mapped[int] = mapped_column(ForeignKey("abstinences.id", ondelete="CASCADE"), nullable=False)
+    abstinence_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("abstinences.id", ondelete="CASCADE"), nullable=False)
     week: Mapped[int] = mapped_column(Integer, nullable=False)
-    exercise: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    sleep_quality: Mapped[str] = mapped_column(String, nullable=False)
-    regular_meals: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    had_craving: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    answers: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     date: Mapped[date] = mapped_column(Date, default=date.today)
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 

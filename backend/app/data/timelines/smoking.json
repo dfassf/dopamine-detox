@@ -148,6 +148,47 @@
           "condition": null
         }
       ]
+    },
+    {
+      "stage": 6,
+      "name": "완전 회복기",
+      "day_from": 366,
+      "day_to": 5475,
+      "summary": "장기 질환 위험도 비흡연자 수준으로 수렴, 완전한 회복",
+      "events": [
+        {
+          "day": 730,
+          "fact": "2년. 심근경색 위험이 비흡연자와 거의 동일한 수준까지 감소합니다.",
+          "feeling": null,
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 1825,
+          "fact": "5년. 뇌졸중 위험이 비흡연자 수준으로 돌아옵니다. 구강암, 후두암, 식도암, 방광암 위험이 절반으로 줄어듭니다.",
+          "feeling": "5년. 이제 뇌혈관 기준으로는 비흡연자와 같습니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 3650,
+          "fact": "10년. 폐암 사망 위험이 흡연자 대비 절반으로 줄어듭니다. 후두암, 췌장암 위험도 크게 감소합니다.",
+          "feeling": "10년. 폐암이라는 단어가 더 이상 당신의 이야기가 아닙니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        },
+        {
+          "day": 5475,
+          "fact": "15년. 관상동맥 질환 위험이 비흡연자와 동일해집니다. 의학적으로 완전한 회복입니다.",
+          "feeling": "15년. 당신의 몸은 담배를 피운 적 없는 사람과 같은 심혈관 상태입니다.",
+          "action": null,
+          "is_proactive": false,
+          "condition": null
+        }
+      ]
     }
   ]
 }

@@ -1,34 +1,50 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { submitCheckin, type CheckinResponse } from "../api/checkin";
-
-type SleepQuality = "good" | "normal" | "bad";
+import {
+  getCheckinQuestions,
+  submitCheckin,
+  type CheckinQuestion,
+  type CheckinResponse,
+} from "../api/checkin";
+import {
+  PageHeader,
+  Card,
+  SelectionGroup,
+  Button,
+  BottomAction,
+  LoadingState,
+} from "../components/ui";
 
 export default function CheckinPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [exercise, setExercise] = useState<boolean | null>(null);
-  const [sleep, setSleep] = useState<SleepQuality | null>(null);
-  const [meals, setMeals] = useState<boolean | null>(null);
-  const [craving, setCraving] = useState<boolean | null>(null);
-
+  const [questions, setQuestions] = useState<CheckinQuestion[]>([]);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CheckinResponse | null>(null);
 
+  useEffect(() => {
+    if (!id) return;
+    getCheckinQuestions(id)
+      .then((res) => setQuestions(res.questions))
+      .catch(() => setQuestions([]))
+      .finally(() => setLoadingQuestions(false));
+  }, [id]);
+
   const canSubmit =
-    exercise !== null && sleep !== null && meals !== null && craving !== null;
+    questions.length > 0 && questions.every((q) => answers[q.key] != null);
+
+  function handleAnswer(key: string, value: string) {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  }
 
   async function handleSubmit() {
     if (!canSubmit || !id) return;
     setLoading(true);
     try {
-      const res = await submitCheckin(Number(id), {
-        exercise: exercise!,
-        sleep_quality: sleep!,
-        regular_meals: meals!,
-        had_craving: craving!,
-      });
+      const res = await submitCheckin(id, { answers });
       setResult(res);
     } catch {
       setResult({
@@ -45,11 +61,7 @@ export default function CheckinPage() {
   if (result) {
     return (
       <div className="screen">
-        <div className="app-header">
-          <div className="back-header">
-            <h1 style={{ fontSize: 18 }}>체크인 완료</h1>
-          </div>
-        </div>
+        <PageHeader title="체크인 완료" small />
         <div
           className="screen-content"
           style={{
@@ -103,39 +115,26 @@ export default function CheckinPage() {
               다음 체크인: {result.next_checkin_date}
             </p>
           )}
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/dashboard", { replace: true })}
-          >
+          <Button onClick={() => navigate("/dashboard", { replace: true })}>
             홈으로 돌아가기
-          </button>
+          </Button>
         </div>
+      </div>
+    );
+  }
+
+  if (loadingQuestions) {
+    return (
+      <div className="screen">
+        <PageHeader title="주간 체크인" onBack small />
+        <LoadingState />
       </div>
     );
   }
 
   return (
     <div className="screen">
-      {/* Header */}
-      <div className="app-header">
-        <div className="back-header">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--gray-700)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1 style={{ fontSize: 18 }}>주간 체크인</h1>
-        </div>
-      </div>
+      <PageHeader title="주간 체크인" onBack small />
 
       <div className="screen-content" style={{ padding: "0 0 24px" }}>
         <div
@@ -151,77 +150,35 @@ export default function CheckinPage() {
           타임라인을 더 정확하게 조정해드립니다.
         </div>
 
-        {/* Q1: Exercise */}
-        <Question title="이번 주 운동 했나요?">
-          <ToggleOptions
-            options={[
-              { label: "네", value: true },
-              { label: "아니오", value: false },
-            ]}
-            selected={exercise}
-            onChange={setExercise}
-          />
-        </Question>
-
-        {/* Q2: Sleep */}
-        <Question title="수면은 어땠나요?">
-          <TripleOptions
-            options={[
-              { label: "좋음", value: "good" },
-              { label: "보통", value: "normal" },
-              { label: "나쁨", value: "bad" },
-            ]}
-            selected={sleep}
-            onChange={setSleep}
-          />
-        </Question>
-
-        {/* Q3: Meals */}
-        <Question title="식사는 규칙적이었나요?">
-          <ToggleOptions
-            options={[
-              { label: "네", value: true },
-              { label: "아니오", value: false },
-            ]}
-            selected={meals}
-            onChange={setMeals}
-          />
-        </Question>
-
-        {/* Q4: Craving */}
-        <Question title="충동이 있었나요?">
-          <ToggleOptions
-            options={[
-              { label: "네", value: true },
-              { label: "아니오", value: false },
-            ]}
-            selected={craving}
-            onChange={setCraving}
-          />
-        </Question>
+        {questions.map((q) => (
+          <QuestionCard key={q.key} title={q.title}>
+            <SelectionGroup
+              options={q.options.map((o) => ({
+                label: o.label,
+                value: o.value,
+              }))}
+              selected={answers[q.key] ?? null}
+              onChange={(val) => handleAnswer(q.key, val)}
+            />
+          </QuestionCard>
+        ))}
       </div>
 
-      {/* Bottom button */}
-      <div
-        style={{
-          padding: "16px 24px",
-          paddingBottom: 32,
-          background: "var(--white)",
-        }}
-      >
-        <button
-          className="btn btn-primary"
-          disabled={!canSubmit || loading}
+      <BottomAction>
+        <Button
+          disabled={!canSubmit}
+          loading={loading}
+          loadingText="분석 중..."
           onClick={handleSubmit}
         >
-          {loading ? "분석 중..." : "체크인 완료"}
-        </button>
-      </div>
+          체크인 완료
+        </Button>
+      </BottomAction>
     </div>
   );
 }
 
-function Question({
+function QuestionCard({
   title,
   children,
 }: {
@@ -229,14 +186,7 @@ function Question({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      style={{
-        background: "var(--white)",
-        margin: "0 16px 10px",
-        borderRadius: 14,
-        padding: "18px 20px",
-      }}
-    >
+    <Card style={{ margin: "0 16px 10px" }}>
       <h4
         style={{
           fontSize: 15,
@@ -248,94 +198,6 @@ function Question({
         {title}
       </h4>
       {children}
-    </div>
-  );
-}
-
-function ToggleOptions<T>({
-  options,
-  selected,
-  onChange,
-}: {
-  options: { label: string; value: T }[];
-  selected: T | null;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div style={{ display: "flex", gap: 10 }}>
-      {options.map((opt) => (
-        <button
-          key={opt.label}
-          onClick={() => onChange(opt.value)}
-          style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 10,
-            border:
-              selected === opt.value
-                ? "2px solid var(--primary)"
-                : "1.5px solid var(--gray-200)",
-            background:
-              selected === opt.value
-                ? "var(--primary-light)"
-                : "var(--white)",
-            color:
-              selected === opt.value
-                ? "var(--primary-dark)"
-                : "var(--gray-700)",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.15s",
-          }}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function TripleOptions<T>({
-  options,
-  selected,
-  onChange,
-}: {
-  options: { label: string; value: T }[];
-  selected: T | null;
-  onChange: (v: T) => void;
-}) {
-  return (
-    <div style={{ display: "flex", gap: 8 }}>
-      {options.map((opt) => (
-        <button
-          key={opt.label}
-          onClick={() => onChange(opt.value)}
-          style={{
-            flex: 1,
-            padding: "12px 0",
-            borderRadius: 10,
-            border:
-              selected === opt.value
-                ? "2px solid var(--primary)"
-                : "1.5px solid var(--gray-200)",
-            background:
-              selected === opt.value
-                ? "var(--primary-light)"
-                : "var(--white)",
-            color:
-              selected === opt.value
-                ? "var(--primary-dark)"
-                : "var(--gray-700)",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.15s",
-          }}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
+    </Card>
   );
 }

@@ -6,6 +6,14 @@ import {
   type DashboardResponse,
   type TodayMessage,
 } from "../api/dashboard";
+import {
+  PageHeader,
+  Card,
+  Button,
+  LoadingState,
+  EmptyState,
+  ProgressBar,
+} from "../components/ui";
 
 const TYPE_EMOJI: Record<string, string> = {
   alcohol: "\u{1F37A}",
@@ -38,53 +46,22 @@ export default function DashboardPage() {
   }, []);
 
   if (loading) {
-    return (
-      <div style={{ padding: 24, textAlign: "center", color: "var(--gray-400)" }}>
-        불러오는 중...
-      </div>
-    );
+    return <LoadingState />;
   }
 
   const hasAbstinences = data && data.abstinences.length > 0;
 
   return (
     <>
-      {/* Header */}
-      <div className="app-header">
-        <h1>restrainter</h1>
-      </div>
+      <PageHeader title="도파민 디톡스" />
 
       {!hasAbstinences ? (
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            padding: "40px 32px",
-            textAlign: "center",
-          }}
-        >
-          <div style={{ fontSize: 48, marginBottom: 16 }}>{"\u{1F331}"}</div>
-          <p
-            style={{
-              fontSize: 16,
-              color: "var(--gray-500)",
-              marginBottom: 24,
-              lineHeight: 1.6,
-            }}
-          >
-            아직 시작한 금욕이 없어요
-          </p>
-          <button
-            className="btn btn-primary"
-            style={{ maxWidth: 240 }}
-            onClick={() => navigate("/abstinence/new")}
-          >
-            금욕 시작하기
-          </button>
-        </div>
+        <EmptyState
+          emoji={"\u{1F331}"}
+          message="아직 시작한 디톡스가 없어요"
+          actionLabel="디톡스 시작하기"
+          onAction={() => navigate("/abstinence/new")}
+        />
       ) : (
         <div style={{ paddingBottom: 16 }}>
           {data!.today_messages.length > 0 && (
@@ -100,7 +77,7 @@ export default function DashboardPage() {
               letterSpacing: 0.5,
             }}
           >
-            내 금욕
+            내 디톡스
           </div>
 
           {data!.abstinences.map((a) => (
@@ -108,12 +85,9 @@ export default function DashboardPage() {
           ))}
 
           {data!.has_pending_checkin && data!.abstinences.length > 0 && (
-            <div
+            <Card
               style={{
-                background: "var(--white)",
-                borderRadius: 16,
                 margin: "0 16px 12px",
-                padding: "18px 20px",
                 border: "1.5px dashed var(--primary)",
               }}
             >
@@ -137,37 +111,17 @@ export default function DashboardPage() {
               >
                 이번 주 상태를 알려주시면 타임라인을 업데이트해요
               </p>
-              <button
-                className="btn btn-primary"
+              <Button
                 style={{ fontSize: 13, padding: "10px 20px" }}
                 onClick={() =>
                   navigate(`/abstinence/${data!.abstinences[0].id}/checkin`)
                 }
               >
                 체크인하기
-              </button>
-            </div>
+              </Button>
+            </Card>
           )}
 
-          <button
-            onClick={() => navigate("/abstinence/new")}
-            style={{
-              display: "block",
-              width: "calc(100% - 32px)",
-              margin: "4px 16px 16px",
-              padding: 14,
-              border: "1.5px dashed var(--gray-300)",
-              borderRadius: 12,
-              textAlign: "center",
-              fontSize: 14,
-              color: "var(--gray-400)",
-              fontWeight: 500,
-              background: "transparent",
-              cursor: "pointer",
-            }}
-          >
-            + 금욕 추가
-          </button>
         </div>
       )}
     </>
@@ -177,12 +131,9 @@ export default function DashboardPage() {
 function TodayMessageCard({ msg }: { msg: TodayMessage }) {
   const label = TYPE_LABEL[msg.abstinence_type] || msg.abstinence_type;
   return (
-    <div
+    <Card
       style={{
-        background: "var(--white)",
-        borderRadius: 16,
         margin: "12px 16px",
-        padding: 20,
         borderLeft: "4px solid var(--primary)",
       }}
     >
@@ -237,7 +188,7 @@ function TodayMessageCard({ msg }: { msg: TodayMessage }) {
           {msg.action}
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
@@ -246,21 +197,13 @@ function AbstinenceCard({ item }: { item: DashboardAbstinence }) {
   const emoji = TYPE_EMOJI[item.type] || "\u{2728}";
   const bg = TYPE_BG[item.type] || "var(--primary-light)";
 
+  const progress =
+    item.current_stage.total_stages > 0
+      ? (item.current_stage.stage / item.current_stage.total_stages) * 100
+      : 0;
+
   return (
-    <button
-      onClick={() => navigate(`/timeline/${item.id}`)}
-      style={{
-        display: "block",
-        width: "calc(100% - 32px)",
-        background: "var(--white)",
-        borderRadius: 16,
-        margin: "0 16px 10px",
-        padding: "18px 20px",
-        border: "none",
-        cursor: "pointer",
-        textAlign: "left",
-      }}
-    >
+    <Card onClick={() => navigate(`/timeline/${item.id}`)} style={{ margin: "0 16px 10px" }}>
       <div
         style={{
           display: "flex",
@@ -301,40 +244,11 @@ function AbstinenceCard({ item }: { item: DashboardAbstinence }) {
         {item.current_stage.stage})
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: 12,
-            color: "var(--gray-600)",
-          }}
-        >
-          <span>진행중</span>
-          <span>{item.current_stage.days_to_next_stage}일 후 다음 단계</span>
-        </div>
-        <div
-          style={{
-            height: 8,
-            background: "var(--gray-100)",
-            borderRadius: 4,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              background: "var(--primary)",
-              borderRadius: 4,
-              width: `${
-                item.current_stage.total_stages > 0
-                  ? (item.current_stage.stage / item.current_stage.total_stages) * 100
-                  : 0
-              }%`,
-            }}
-          />
-        </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "var(--gray-600)", marginBottom: 8 }}>
+        <span>진행중</span>
+        <span>{item.current_stage.days_to_next_stage}일 후 다음 단계</span>
       </div>
-    </button>
+      <ProgressBar percent={progress} height={8} />
+    </Card>
   );
 }

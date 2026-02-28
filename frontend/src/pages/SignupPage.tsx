@@ -1,8 +1,10 @@
 import { type FormEvent, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import { signup } from "../api/auth";
 import { useAuth } from "../contexts/AuthContext";
 import { AxiosError } from "axios";
+import { PageHeader, FormField, Button } from "../components/ui";
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -44,7 +46,9 @@ export default function SignupPage() {
     setLoading(true);
     try {
       const data = await signup(email, password, nickname.trim());
-      loginSuccess(data.access_token, data.user);
+      flushSync(() => {
+        loginSuccess(data.access_token, data.user);
+      });
       navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err instanceof AxiosError && err.response?.status === 409) {
@@ -60,22 +64,14 @@ export default function SignupPage() {
 
   return (
     <div className="screen">
-      <div className="auth-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gray-700)" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <h2>회원가입</h2>
-      </div>
+      <PageHeader title="회원가입" onBack variant="auth" />
 
       <form
         className="screen-content"
         onSubmit={handleSubmit}
         style={{ padding: "8px 24px 32px", display: "flex", flexDirection: "column" }}
       >
-        <div className="form-group">
-          <label>이메일</label>
+        <FormField label="이메일" error={errors.email}>
           <input
             type="email"
             placeholder="example@email.com"
@@ -83,11 +79,9 @@ export default function SignupPage() {
             onChange={(e) => setEmail(e.target.value)}
             className={errors.email ? "error" : ""}
           />
-          {errors.email && <div className="error-text">{errors.email}</div>}
-        </div>
+        </FormField>
 
-        <div className="form-group">
-          <label>비밀번호</label>
+        <FormField label="비밀번호" error={errors.password}>
           <input
             type="password"
             placeholder="8자 이상"
@@ -95,11 +89,9 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             className={errors.password ? "error" : ""}
           />
-          {errors.password && <div className="error-text">{errors.password}</div>}
-        </div>
+        </FormField>
 
-        <div className="form-group">
-          <label>비밀번호 확인</label>
+        <FormField label="비밀번호 확인" error={errors.passwordConfirm}>
           <input
             type="password"
             placeholder="비밀번호를 다시 입력해주세요"
@@ -107,13 +99,9 @@ export default function SignupPage() {
             onChange={(e) => setPasswordConfirm(e.target.value)}
             className={errors.passwordConfirm ? "error" : ""}
           />
-          {errors.passwordConfirm && (
-            <div className="error-text">{errors.passwordConfirm}</div>
-          )}
-        </div>
+        </FormField>
 
-        <div className="form-group">
-          <label>닉네임</label>
+        <FormField label="닉네임" error={errors.nickname}>
           <input
             type="text"
             placeholder="2~20자"
@@ -121,15 +109,19 @@ export default function SignupPage() {
             onChange={(e) => setNickname(e.target.value)}
             className={errors.nickname ? "error" : ""}
           />
-          {errors.nickname && <div className="error-text">{errors.nickname}</div>}
-        </div>
+        </FormField>
 
         <div style={{ flex: 1 }} />
 
         <div>
-          <button className="btn btn-primary" type="submit" disabled={!isValid || loading}>
-            {loading ? "가입 중..." : "가입하기"}
-          </button>
+          <Button
+            type="submit"
+            disabled={!isValid}
+            loading={loading}
+            loadingText="가입 중..."
+          >
+            가입하기
+          </Button>
           <div className="form-link">
             이미 계정이 있으신가요? <Link to="/login">로그인</Link>
           </div>

@@ -1,7 +1,7 @@
 import api from "./client";
 
 export interface UserData {
-  id: number;
+  id: string;
   email: string;
   nickname: string;
 }

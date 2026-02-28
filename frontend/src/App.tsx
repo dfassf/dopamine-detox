@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router";
 import { AuthProvider } from "./contexts/AuthContext";
+import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import LandingPage from "./pages/LandingPage";
@@ -17,22 +18,26 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* 탭 바 없는 화면 (비로그인) */}
+          {/* 비로그인 전용 */}
+          <Route element={<GuestRoute />}>
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/login" element={<LoginPage />} />
+          </Route>
+
+          {/* 랜딩 */}
           <Route path="/" element={<LandingPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/login" element={<LoginPage />} />
 
           {/* 탭 바 있는 화면 (로그인 필수) */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/timeline" element={<TimelinePage />} />
+              <Route path="/timeline/:id" element={<TimelineDetailPage />} />
               <Route path="/mypage" element={<MyPage />} />
             </Route>
 
             {/* 탭 바 없는 화면 (로그인 필수) */}
             <Route path="/abstinence/new" element={<NewAbstinencePage />} />
-            <Route path="/timeline/:id" element={<TimelineDetailPage />} />
             <Route path="/abstinence/:id/checkin" element={<CheckinPage />} />
           </Route>
         </Routes>

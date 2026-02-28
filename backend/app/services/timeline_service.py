@@ -1,13 +1,15 @@
 import json
 from pathlib import Path
 
-import anthropic
+import httpx
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import Abstinence, TimelineEvent, TimelineStage
 
 TIMELINES_DIR = Path(__file__).parent.parent / "data" / "timelines"
+
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 TEMPLATE_MAP = {
     "alcohol": "alcohol.json",
@@ -61,7 +63,7 @@ def _filter_events(events: list[dict], config: dict, gender: str | None) -> list
 
 
 def _build_ai_prompt(template: dict, config: dict, abstinence_type: str, birth_year: int, gender: str) -> str:
-    """Claude API 호출용 프롬프트 생성."""
+    """Gemini API 호출용 프롬프트 생성."""
     import datetime
 
     age = datetime.date.today().year - birth_year
@@ -93,14 +95,14 @@ def _build_ai_prompt(template: dict, config: dict, abstinence_type: str, birth_y
             user_info_parts.append(f"목표: {config['diet_goal']}")
     elif abstinence_type == "custom":
         if config.get("label"):
-            user_info_parts.append(f"금욕 대상: {config['label']}")
+            user_info_parts.append(f"디톡스 대상: {config['label']}")
         if config.get("habit_years"):
             user_info_parts.append(f"습관 기간: {config['habit_years']}년")
 
     user_info = "\n".join(user_info_parts)
     template_json = json.dumps(template, ensure_ascii=False, indent=2)
 
-    return f"""아래는 금욕 타임라인 기본 템플릿입니다. 사용자의 개인 정보를 바탕으로 이 템플릿의 날짜(day)와 메시지(fact, feeling, action)를 개인화해주세요.
+    return f"""아래는 도파민 디톡스 타임라인 기본 템플릿입니다. 사용자의 개인 정보를 바탕으로 이 템플릿의 날짜(day)와 메시지(fact, feeling, action)를 개인화해주세요.
 
 ## 사용자 정보
 {user_info}
@@ -116,6 +118,27 @@ def _build_ai_prompt(template: dict, config: dict, abstinence_type: str, birth_y
 
 ## 기본 템플릿
 {template_json}"""
+
+
+def _call_gemini(prompt: str) -> str:
+    """Gemini REST API 호출."""
+    resp = httpx.post(
+        GEMINI_API_URL,
+        params={"key": settings.GEMINI_API_KEY},
+        json={"contents": [{"parts": [{"text": prompt}]}]},
+        timeout=60.0,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+
+def _parse_json_response(text: str) -> dict:
+    """AI 응답에서 JSON 파싱 (마크다운 코드블록 제거)."""
+    if text.startswith("```"):
+        lines = text.split("\n")
+        text = "\n".join(lines[1:-1])
+    return json.loads(text)
 
 
 def generate_timeline(
@@ -138,37 +161,17 @@ def generate_timeline(
 
     # 2. AI 개인화 (API 키가 있을 때만)
     personalized = filtered_template
-    if settings.ANTHROPIC_API_KEY:
+    if settings.GEMINI_API_KEY:
         try:
-            personalized = _call_ai(filtered_template, config, abstinence.type, birth_year, gender)
+            prompt = _build_ai_prompt(filtered_template, config, abstinence.type, birth_year, gender)
+            response_text = _call_gemini(prompt)
+            personalized = _parse_json_response(response_text)
         except Exception:
-            # AI 실패 시 필터링된 템플릿 그대로 사용 (fallback)
             personalized = filtered_template
 
     # 3. DB 저장
     _save_to_db(personalized, abstinence, db)
     return True
-
-
-def _call_ai(template: dict, config: dict, abstinence_type: str, birth_year: int, gender: str) -> dict:
-    """Claude API로 개인화된 타임라인 생성."""
-    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    prompt = _build_ai_prompt(template, config, abstinence_type, birth_year, gender)
-
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    response_text = message.content[0].text.strip()
-
-    # JSON 파싱 (마크다운 코드블록 제거)
-    if response_text.startswith("```"):
-        lines = response_text.split("\n")
-        response_text = "\n".join(lines[1:-1])
-
-    return json.loads(response_text)
 
 
 def _save_to_db(timeline_data: dict, abstinence: Abstinence, db: Session) -> None:

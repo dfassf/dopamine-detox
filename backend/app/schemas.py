@@ -1,4 +1,5 @@
 from datetime import date
+from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, field_validator
 
@@ -32,7 +33,7 @@ class LoginRequest(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: UUID
     email: str
     nickname: str
 
@@ -68,7 +69,7 @@ class AbstinenceCreateRequest(BaseModel):
 
 
 class AbstinenceResponse(BaseModel):
-    id: int
+    id: UUID
     type: str
     label: str
     start_date: date
@@ -79,7 +80,7 @@ class AbstinenceResponse(BaseModel):
 
 
 class AbstinenceListItem(BaseModel):
-    id: int
+    id: UUID
     type: str
     label: str
     start_date: date
@@ -132,7 +133,7 @@ class TimelineResponse(BaseModel):
 # ===== Dashboard =====
 
 class TodayMessage(BaseModel):
-    abstinence_id: int
+    abstinence_id: UUID
     abstinence_type: str
     current_day: int
     fact: str
@@ -142,7 +143,7 @@ class TodayMessage(BaseModel):
 
 
 class DashboardAbstinence(BaseModel):
-    id: int
+    id: UUID
     type: str
     label: str
     current_day: int
@@ -157,11 +158,24 @@ class DashboardResponse(BaseModel):
 
 # ===== Checkin =====
 
+class CheckinQuestionOption(BaseModel):
+    label: str
+    value: str
+
+
+class CheckinQuestion(BaseModel):
+    key: str
+    title: str
+    type: str  # toggle, select
+    options: list[CheckinQuestionOption]
+
+
+class CheckinQuestionsResponse(BaseModel):
+    questions: list[CheckinQuestion]
+
+
 class CheckinRequest(BaseModel):
-    exercise: bool
-    sleep_quality: str  # good, normal, bad
-    regular_meals: bool
-    had_craving: bool
+    answers: dict[str, str]
 
 
 class CheckinResponse(BaseModel):

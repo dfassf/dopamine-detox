@@ -1,11 +1,35 @@
 import json
 from datetime import date, timedelta
+from uuid import UUID
 
-import anthropic
+import httpx
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import Abstinence, Checkin, TimelineEvent, TimelineStage
+
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+
+def _call_gemini(prompt: str) -> str:
+    """Gemini REST API 호출."""
+    resp = httpx.post(
+        GEMINI_API_URL,
+        params={"key": settings.GEMINI_API_KEY},
+        json={"contents": [{"parts": [{"text": prompt}]}]},
+        timeout=60.0,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
+
+
+def _parse_json_response(text: str) -> dict:
+    """AI 응답에서 JSON 파싱 (마크다운 코드블록 제거)."""
+    if text.startswith("```"):
+        lines = text.split("\n")
+        text = "\n".join(lines[1:-1])
+    return json.loads(text)
 
 
 def process_checkin(
@@ -30,7 +54,7 @@ def process_checkin(
         return "모든 타임라인 이벤트가 완료되었습니다."
 
     # AI 키가 없으면 기본 메시지 반환
-    if not settings.ANTHROPIC_API_KEY:
+    if not settings.GEMINI_API_KEY:
         return "체크인이 기록되었습니다."
 
     # AI로 재조정
@@ -48,7 +72,7 @@ def _adjust_timeline_with_ai(
     current_day: int,
     db: Session,
 ) -> str:
-    """Claude API로 남은 이벤트들의 날짜/메시지를 재조정."""
+    """Gemini API로 남은 이벤트들의 날짜/메시지를 재조정."""
     config = json.loads(abstinence.config) if abstinence.config else {}
 
     events_data = []
@@ -61,16 +85,12 @@ def _adjust_timeline_with_ai(
             "action": e.action,
         })
 
-    checkin_info = (
-        f"- 운동: {'했음' if checkin.exercise else '안 했음'}\n"
-        f"- 수면: {checkin.sleep_quality}\n"
-        f"- 규칙적 식사: {'예' if checkin.regular_meals else '아니오'}\n"
-        f"- 충동: {'있었음' if checkin.had_craving else '없었음'}"
-    )
+    answers = json.loads(checkin.answers) if checkin.answers else {}
+    checkin_info = "\n".join(f"- {k}: {v}" for k, v in answers.items())
 
     prompt = f"""사용자가 주간 체크인을 했습니다. 체크인 결과를 바탕으로 남은 타임라인 이벤트의 day 값과 메시지를 재조정해주세요.
 
-## 금욕 정보
+## 디톡스 정보
 - 종류: {abstinence.type}
 - 시작일: {abstinence.start_date}
 - 현재 D+{current_day}
@@ -80,12 +100,11 @@ def _adjust_timeline_with_ai(
 {checkin_info}
 
 ## 재조정 규칙
-1. 운동을 시작했으면 회복 속도를 약간 앞당겨주세요 (day 감소).
-2. 수면이 나쁘면 회복이 둔화됩니다 (day 증가).
-3. 불규칙한 식사는 체성분 변화를 늦춥니다.
-4. 충동이 있었으면 격려 메시지를 추가/강화하세요.
-5. 변경 폭은 ±1~5일 정도로 소폭 조정하세요.
-6. 반드시 JSON 배열만 출력하세요. 설명 없이.
+1. 체크인 답변에서 긍정적 신호(운동 함, 수면 좋음, 도파민 충동 없음 등)가 있으면 회복 속도를 앞당기세요 (day 감소).
+2. 부정적 신호(수면 나쁨, 도파민 충동 있음, 스트레스 높음 등)가 있으면 회복이 둔화됩니다 (day 증가).
+3. 도파민 충동이 있었으면 격려 메시지를 추가/강화하세요.
+4. 변경 폭은 ±1~5일 정도로 소폭 조정하세요.
+5. 반드시 JSON만 출력하세요. 설명 없이.
 
 ## 남은 이벤트
 {json.dumps(events_data, ensure_ascii=False, indent=2)}
@@ -97,19 +116,8 @@ def _adjust_timeline_with_ai(
 예:
 {{"events": [...], "summary": "운동 효과 반영: 본격 변화기 진입이 3일 앞당겨졌습니다."}}"""
 
-    client = anthropic.Anthropic(api_key=settings.ANTHROPIC_API_KEY)
-    message = client.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
-
-    response_text = message.content[0].text.strip()
-    if response_text.startswith("```"):
-        lines = response_text.split("\n")
-        response_text = "\n".join(lines[1:-1])
-
-    result = json.loads(response_text)
+    response_text = _call_gemini(prompt)
+    result = _parse_json_response(response_text)
 
     # DB 업데이트
     for adj in result.get("events", []):
@@ -126,7 +134,7 @@ def _adjust_timeline_with_ai(
     return result.get("summary", "타임라인이 업데이트되었습니다.")
 
 
-def get_next_checkin_date(abstinence_id: int, db: Session) -> date:
+def get_next_checkin_date(abstinence_id: UUID, db: Session) -> date:
     """다음 체크인 날짜 계산 (마지막 체크인 + 7일)."""
     last = (
         db.query(Checkin)

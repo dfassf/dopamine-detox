@@ -18,7 +18,7 @@ export interface AbstinenceCreateRequest {
 }
 
 export interface AbstinenceResponse {
-  id: number;
+  id: string;
   type: string;
   label: string;
   start_date: string;
@@ -27,7 +27,7 @@ export interface AbstinenceResponse {
 }
 
 export interface AbstinenceListItem {
-  id: number;
+  id: string;
   type: string;
   label: string;
   start_date: string;
@@ -82,7 +82,7 @@ export async function listAbstinences(): Promise<AbstinenceListItem[]> {
 }
 
 export async function getTimeline(
-  abstinenceId: number
+  abstinenceId: string
 ): Promise<TimelineResponse> {
   const { data } = await api.get<TimelineResponse>(
     `/abstinence/${abstinenceId}/timeline`
@@ -91,7 +91,7 @@ export async function getTimeline(
 }
 
 export async function deleteAbstinence(
-  abstinenceId: number
+  abstinenceId: string
 ): Promise<void> {
   await api.delete(`/abstinence/${abstinenceId}`);
 }

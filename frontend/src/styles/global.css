@@ -145,9 +145,13 @@ body {
 .app-header {
   background: var(--white);
   padding: 8px 24px 16px;
+  margin-bottom: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .app-header h1 {
   font-size: 22px;
@@ -165,3 +169,85 @@ body {
   font-weight: 600;
   color: var(--primary-dark);
 }
+
+/* Dropdown menu */
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  min-width: 120px;
+  z-index: 21;
+  padding: 4px;
+}
+.dropdown-item {
+  width: 100%;
+  padding: 10px 12px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.15s;
+}
+.dropdown-item:hover {
+  background: var(--gray-50);
+}
+.dropdown-item:active {
+  background: var(--gray-100);
+}
+
+/* ===== Shared UI Components ===== */
+
+/* Card */
+.card { background: var(--white); border-radius: 16px; }
+.card--default { padding: 18px 20px; }
+.card--compact { padding: 16px 18px; }
+.card--clickable { border: none; cursor: pointer; text-align: left; display: block; width: -webkit-fill-available; width: -moz-available; width: stretch; }
+
+/* Loading state */
+.loading-state { padding: 24px; text-align: center; color: var(--gray-400); }
+
+/* Empty state */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 32px;
+  text-align: center;
+}
+.empty-state__emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state__message { font-size: 16px; color: var(--gray-500); margin-bottom: 24px; line-height: 1.6; }
+
+/* Progress bar */
+.progress-bar { background: var(--gray-100); border-radius: 4px; overflow: hidden; }
+.progress-bar__fill { height: 100%; background: var(--primary); border-radius: 4px; }
+
+/* Selection group */
+.selection-group { display: flex; gap: 10px; }
+.selection-option {
+  flex: 1;
+  padding: 12px 0;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--white);
+  color: var(--gray-700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.selection-option--active {
+  border: 2px solid var(--primary);
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+/* Bottom action */
+.bottom-action { padding: 16px 24px 32px; background: var(--white); }

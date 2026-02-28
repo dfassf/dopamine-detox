@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "../contexts/AuthContext";
+import { PageHeader, Card } from "../components/ui";
 
 export default function MyPage() {
   const navigate = useNavigate();
@@ -12,20 +13,11 @@ export default function MyPage() {
 
   return (
     <>
-      <div className="app-header">
-        <h1>마이페이지</h1>
-      </div>
+      <PageHeader title="마이페이지" />
 
       <div style={{ padding: "0 16px" }}>
         {/* Profile card */}
-        <div
-          style={{
-            background: "var(--white)",
-            borderRadius: 16,
-            padding: "24px 20px",
-            marginBottom: 12,
-          }}
-        >
+        <Card style={{ padding: "24px 20px", marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
             <div
               style={{
@@ -52,35 +44,15 @@ export default function MyPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Menu items */}
-        <div
-          style={{
-            background: "var(--white)",
-            borderRadius: 16,
-            overflow: "hidden",
-            marginBottom: 24,
-          }}
-        >
-          <MenuItem label="내 금욕 관리" onClick={() => navigate("/timeline")} />
+        <Card padding="none" style={{ overflow: "hidden", marginBottom: 24 }}>
+          <MenuItem label="내 디톡스 관리" onClick={() => navigate("/timeline")} />
           <Divider />
           <MenuItem label="로그아웃" onClick={handleLogout} danger />
-        </div>
+        </Card>
 
-        {/* App info */}
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: 12,
-            color: "var(--gray-400)",
-            lineHeight: 1.6,
-          }}
-        >
-          restrainter v0.1.0
-          <br />
-          눈에 보이지 않는 변화를 타임라인으로
-        </div>
       </div>
     </>
   );

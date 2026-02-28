@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   getTimeline,
+  deleteAbstinence,
   type TimelineResponse,
   type TimelineStage,
   type TimelineEvent,
 } from "../api/abstinence";
+import { PageHeader, LoadingState, ProgressBar } from "../components/ui";
 
 export default function TimelineDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -13,21 +15,46 @@ export default function TimelineDetailPage() {
   const [data, setData] = useState<TimelineResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedStages, setExpandedStages] = useState<Set<number>>(new Set());
+  const [currentStageIdx, setCurrentStageIdx] = useState<number>(-1);
+  const stageRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!id) return;
-    getTimeline(Number(id))
+    getTimeline(id)
       .then((res) => {
         setData(res);
-        // 현재 단계 자동 펼침
-        const currentIdx = res.stages.findIndex((s) => s.status === "current");
-        if (currentIdx >= 0) {
-          setExpandedStages(new Set([currentIdx]));
+        const idx = res.stages.findIndex((s) => s.status === "current");
+        if (idx >= 0) {
+          setExpandedStages(new Set([idx]));
+          setCurrentStageIdx(idx);
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (currentStageIdx >= 0 && !loading) {
+      const el = stageRefs.current.get(currentStageIdx);
+      if (el) {
+        el.scrollIntoView({ behavior: "instant", block: "center" });
+      }
+    }
+  }, [currentStageIdx, loading]);
+
+  async function handleDelete() {
+    if (!id) return;
+    if (!confirm(`"${data?.abstinence.label}" 디톡스를 삭제하시겠습니까?\n모든 타임라인과 체크인 기록이 함께 삭제됩니다.`)) {
+      return;
+    }
+    try {
+      await deleteAbstinence(id);
+      navigate("/dashboard", { replace: true });
+    } catch {
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  }
 
   function toggleStage(idx: number) {
     setExpandedStages((prev) => {
@@ -43,43 +70,65 @@ export default function TimelineDetailPage() {
 
   if (loading || !data) {
     return (
-      <div className="screen">
-        <div style={{ padding: 24, textAlign: "center", color: "var(--gray-400)" }}>
-          불러오는 중...
-        </div>
-      </div>
+      <>
+        <PageHeader title="타임라인" />
+        <LoadingState />
+      </>
     );
   }
 
   return (
-    <div className="screen screen--gray">
-      {/* Header */}
-      <div className="app-header">
-        <div className="back-header">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--gray-700)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1 style={{ fontSize: 18 }}>{data.abstinence.label} 타임라인</h1>
-        </div>
-        <div className="header-right">D+{data.abstinence.current_day}</div>
-      </div>
+    <>
+      <PageHeader
+        title={`${data.abstinence.label} 타임라인`}
+        onBack
+        right={
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span>D+{data.abstinence.current_day}</span>
+            <div style={{ position: "relative" }}>
+              <button
+                onClick={() => setMenuOpen((v) => !v)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 4,
+                  fontSize: 18,
+                  color: "var(--gray-500)",
+                  lineHeight: 1,
+                }}
+              >
+                {"\u22EF"}
+              </button>
+              {menuOpen && (
+                <>
+                  <div
+                    style={{ position: "fixed", inset: 0, zIndex: 20 }}
+                    onClick={() => setMenuOpen(false)}
+                  />
+                  <div className="dropdown-menu">
+                    <button
+                      className="dropdown-item"
+                      onClick={() => { setMenuOpen(false); handleDelete(); }}
+                      style={{ color: "var(--red)" }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        }
+        small
+      />
 
       {/* Content */}
-      <div className="screen-content" style={{ padding: "8px 0 24px" }}>
+      <div style={{ padding: "8px 0 24px" }}>
         {data.stages.map((stage, idx) => (
           <StageAccordion
             key={idx}
+            ref={(el) => { if (el) stageRefs.current.set(idx, el); }}
             stage={stage}
             expanded={expandedStages.has(idx)}
             onToggle={() => toggleStage(idx)}
@@ -102,16 +151,18 @@ export default function TimelineDetailPage() {
           이 정보는 일반적인 건강 정보이며, 의학적 진단이나 처방이 아닙니다. 개인차가 있을 수 있으며, 건강 관련 결정은 전문의와 상담하세요.
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
 function StageAccordion({
+  ref,
   stage,
   expanded,
   onToggle,
   currentDay,
 }: {
+  ref?: React.Ref<HTMLDivElement>;
   stage: TimelineStage;
   expanded: boolean;
   onToggle: () => void;
@@ -128,11 +179,16 @@ function StageAccordion({
 
   return (
     <div
+      ref={ref}
       style={{
         margin: "0 16px 8px",
         background: "var(--white)",
         borderRadius: 14,
         overflow: "hidden",
+        ...(stage.status === "current" ? {
+          border: "2px solid var(--primary)",
+          boxShadow: "0 0 0 4px var(--primary-light)",
+        } : {}),
       }}
     >
       {/* Header */}
@@ -204,35 +260,16 @@ function StageAccordion({
                   marginBottom: 8,
                 }}
               >
-                <span>
-                  {stage.stage}단계 진행중
-                </span>
-                <span>
-                  {Math.max(stage.day_to - currentDay + 1, 0)}일 후 다음 단계
-                </span>
+                <span>{stage.stage}단계 진행중</span>
+                <span>{Math.max(stage.day_to - currentDay + 1, 0)}일 후 다음 단계</span>
               </div>
-              <div
-                style={{
-                  height: 6,
-                  background: "var(--gray-100)",
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  marginBottom: 18,
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    background: "var(--primary)",
-                    borderRadius: 3,
-                    width: `${Math.min(progress, 100)}%`,
-                  }}
-                />
+              <div style={{ marginBottom: 18 }}>
+                <ProgressBar percent={progress} />
               </div>
             </>
           )}
 
-          {stage.status === "upcoming" && !stage.events && (
+          {(stage.status === "upcoming" || stage.status === "completed") && (!stage.events || stage.events.length === 0) && (
             <div style={{ fontSize: 13, color: "var(--gray-500)", lineHeight: 1.6 }}>
               {stage.summary}
             </div>
@@ -329,6 +366,12 @@ function EventItem({ event }: { event: TimelineEvent }) {
         {expanded ? event.fact : event.fact.length > 60 ? event.fact.slice(0, 60) + "..." : event.fact}
       </div>
 
+      {!expanded && event.fact.length > 60 && (
+        <div style={{ textAlign: "center", marginTop: 4, color: "var(--gray-300)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
+        </div>
+      )}
+
       {expanded && event.feeling && (
         <div
           style={{
@@ -355,6 +398,12 @@ function EventItem({ event }: { event: TimelineEvent }) {
           }}
         >
           {event.action}
+        </div>
+      )}
+
+      {expanded && event.fact.length > 60 && (
+        <div style={{ textAlign: "center", marginTop: 4, color: "var(--gray-300)" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 15 12 9 18 15" /></svg>
         </div>
       )}
     </div>

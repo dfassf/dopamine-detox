@@ -7,11 +7,11 @@ from app.routers import abstinence, auth, dashboard
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="restrainter", version="0.1.0")
+app = FastAPI(title="dopamine-detox", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://localhost:5175"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

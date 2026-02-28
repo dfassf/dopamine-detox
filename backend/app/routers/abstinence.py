@@ -1,5 +1,7 @@
 import json
 from datetime import date
+from pathlib import Path
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -11,6 +13,7 @@ from app.schemas import (
     AbstinenceCreateRequest,
     AbstinenceListItem,
     AbstinenceResponse,
+    CheckinQuestionsResponse,
     CheckinRequest,
     CheckinResponse,
     CurrentStageResponse,
@@ -20,6 +23,8 @@ from app.schemas import (
 )
 from app.services.checkin_service import get_next_checkin_date, process_checkin
 from app.services.timeline_service import LABEL_MAP, generate_timeline
+
+CHECKINS_DIR = Path(__file__).resolve().parent.parent / "data" / "checkins"
 
 router = APIRouter(prefix="/api/abstinence", tags=["abstinence"])
 
@@ -120,7 +125,7 @@ def list_abstinences(
 
 @router.get("/{abstinence_id}/timeline", response_model=TimelineResponse)
 def get_timeline(
-    abstinence_id: int,
+    abstinence_id: UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -129,7 +134,7 @@ def get_timeline(
         Abstinence.user_id == user.id,
     ).first()
     if not abstinence:
-        raise HTTPException(status_code=404, detail="금욕 기록을 찾을 수 없습니다")
+        raise HTTPException(status_code=404, detail="디톡스 기록을 찾을 수 없습니다")
 
     current_day = (date.today() - abstinence.start_date).days + 1
     current_day = max(current_day, 1)
@@ -187,7 +192,7 @@ def get_timeline(
             status = "upcoming"
 
         events = None
-        if status == "current":
+        if status in ("current", "completed"):
             db_events = (
                 db.query(TimelineEvent)
                 .filter(TimelineEvent.stage_id == s.id)
@@ -196,7 +201,7 @@ def get_timeline(
             )
             events = []
             for e in db_events:
-                if current_day >= e.day:
+                if status == "completed" or current_day >= e.day:
                     e_status = "past"
                 elif e.day - current_day <= 3:
                     e_status = "current"
@@ -240,9 +245,33 @@ def get_timeline(
     )
 
 
+@router.get("/{abstinence_id}/checkin/questions", response_model=CheckinQuestionsResponse)
+def get_checkin_questions(
+    abstinence_id: UUID,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    abstinence = db.query(Abstinence).filter(
+        Abstinence.id == abstinence_id,
+        Abstinence.user_id == user.id,
+    ).first()
+    if not abstinence:
+        raise HTTPException(status_code=404, detail="디톡스 기록을 찾을 수 없습니다")
+
+    filename = f"{abstinence.type}.json"
+    path = CHECKINS_DIR / filename
+    if not path.exists():
+        path = CHECKINS_DIR / "custom.json"
+
+    with open(path, encoding="utf-8") as f:
+        data = json.load(f)
+
+    return CheckinQuestionsResponse(**data)
+
+
 @router.post("/{abstinence_id}/checkin", response_model=CheckinResponse)
 def create_checkin(
-    abstinence_id: int,
+    abstinence_id: UUID,
     body: CheckinRequest,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
@@ -252,7 +281,7 @@ def create_checkin(
         Abstinence.user_id == user.id,
     ).first()
     if not abstinence:
-        raise HTTPException(status_code=404, detail="금욕 기록을 찾을 수 없습니다")
+        raise HTTPException(status_code=404, detail="디톡스 기록을 찾을 수 없습니다")
 
     # 주차 계산
     current_day = (date.today() - abstinence.start_date).days + 1
@@ -261,10 +290,7 @@ def create_checkin(
     checkin = Checkin(
         abstinence_id=abstinence_id,
         week=week,
-        exercise=body.exercise,
-        sleep_quality=body.sleep_quality,
-        regular_meals=body.regular_meals,
-        had_craving=body.had_craving,
+        answers=json.dumps(body.answers, ensure_ascii=False),
     )
     db.add(checkin)
     db.commit()
@@ -283,7 +309,7 @@ def create_checkin(
 
 @router.delete("/{abstinence_id}")
 def delete_abstinence(
-    abstinence_id: int,
+    abstinence_id: UUID,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -292,8 +318,8 @@ def delete_abstinence(
         Abstinence.user_id == user.id,
     ).first()
     if not abstinence:
-        raise HTTPException(status_code=404, detail="금욕 기록을 찾을 수 없습니다")
+        raise HTTPException(status_code=404, detail="디톡스 기록을 찾을 수 없습니다")
 
     db.delete(abstinence)
     db.commit()
-    return {"message": "금욕 기록이 삭제되었습니다"}
+    return {"message": "디톡스 기록이 삭제되었습니다"}

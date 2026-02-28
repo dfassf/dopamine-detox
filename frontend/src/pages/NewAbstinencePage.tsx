@@ -4,6 +4,13 @@ import {
   createAbstinence,
   type AbstinenceCreateRequest,
 } from "../api/abstinence";
+import {
+  PageHeader,
+  FormField,
+  SelectField,
+  Button,
+  BottomAction,
+} from "../components/ui";
 
 const PRESETS = [
   { type: "alcohol", emoji: "\u{1F37A}", name: "금주" },
@@ -57,7 +64,8 @@ export default function NewAbstinencePage() {
   const [habitYears, setHabitYears] = useState("");
 
   const canProceed =
-    selectedType && startDate && birthYear && gender;
+    selectedType && startDate && birthYear && gender &&
+    (selectedType !== "custom" || customLabel.trim());
 
   const canSubmit = (() => {
     if (selectedType === "alcohol") {
@@ -116,36 +124,12 @@ export default function NewAbstinencePage() {
 
   return (
     <div className="screen">
-      {/* Header */}
-      <div className="app-header">
-        <div className="back-header">
-          <button
-            className="back-btn"
-            onClick={() => (step === 2 ? setStep(1) : navigate(-1))}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="var(--gray-700)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
-          </button>
-          <h1 style={{ fontSize: 18 }}>
-            {step === 1 ? "금욕 시작하기" : `${PRESETS.find((p) => p.type === selectedType)?.name} 상세 정보`}
-          </h1>
-        </div>
-        {step === 2 && (
-          <div className="header-right" style={{ fontSize: 13, color: "var(--gray-400)" }}>
-            2/2
-          </div>
-        )}
-      </div>
+      <PageHeader
+        title={step === 1 ? "디톡스 시작하기" : `${PRESETS.find((p) => p.type === selectedType)?.name} 상세 정보`}
+        onBack={step === 2 ? () => setStep(1) : true}
+        right={step === 2 ? <span style={{ fontSize: 13, color: "var(--gray-400)" }}>2/2</span> : undefined}
+        small
+      />
 
       {/* Content */}
       <div className="screen-content" style={{ background: "var(--white)", padding: "0 24px" }}>
@@ -160,7 +144,7 @@ export default function NewAbstinencePage() {
                 letterSpacing: 0.5,
               }}
             >
-              무엇을 절제하시나요?
+              무엇을 디톡스하시나요?
             </div>
 
             {/* Preset Grid */}
@@ -212,36 +196,44 @@ export default function NewAbstinencePage() {
               ))}
             </div>
 
+            {/* 커스텀 이름 입력 */}
+            {selectedType === "custom" && (
+              <FormField label="디톡스 대상">
+                <input
+                  type="text"
+                  placeholder="예: 카페인, 야식, SNS"
+                  value={customLabel}
+                  onChange={(e) => setCustomLabel(e.target.value)}
+                />
+              </FormField>
+            )}
+
             {/* Common fields */}
-            <div className="form-group">
-              <label>시작일</label>
+            <FormField label="시작일">
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
-            </div>
-            <div className="form-group">
-              <label>생년</label>
+            </FormField>
+            <FormField label="생년">
               <input
                 type="number"
                 placeholder="예: 1989"
                 value={birthYear}
                 onChange={(e) => setBirthYear(e.target.value)}
               />
-            </div>
-            <div className="form-group">
-              <label>성별</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                style={{ color: gender ? "var(--gray-900)" : "var(--gray-400)" }}
-              >
-                <option value="">선택해주세요</option>
-                <option value="male">남성</option>
-                <option value="female">여성</option>
-              </select>
-            </div>
+            </FormField>
+            <SelectField
+              label="성별"
+              placeholder="선택해주세요"
+              options={[
+                { value: "male", label: "남성" },
+                { value: "female", label: "여성" },
+              ]}
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+            />
           </>
         ) : (
           <>
@@ -279,180 +271,127 @@ export default function NewAbstinencePage() {
             {/* Type-specific fields */}
             {selectedType === "alcohol" && (
               <>
-                <div className="form-group">
-                  <label>체중 (kg)</label>
+                <FormField label="체중 (kg)">
                   <input
                     type="number"
                     placeholder="예: 87"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>키 (cm)</label>
+                </FormField>
+                <FormField label="키 (cm)">
                   <input
                     type="number"
                     placeholder="예: 175"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>음주 기간 (년)</label>
+                </FormField>
+                <FormField label="음주 기간 (년)">
                   <input
                     type="number"
                     placeholder="예: 10"
                     value={drinkingYears}
                     onChange={(e) => setDrinkingYears(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>음주 빈도</label>
-                  <select
-                    value={drinkingFrequency}
-                    onChange={(e) => setDrinkingFrequency(e.target.value)}
-                    style={{
-                      color: drinkingFrequency
-                        ? "var(--gray-900)"
-                        : "var(--gray-400)",
-                    }}
-                  >
-                    <option value="">선택해주세요</option>
-                    {FREQUENCY_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>음주량</label>
+                </FormField>
+                <SelectField
+                  label="음주 빈도"
+                  placeholder="선택해주세요"
+                  options={FREQUENCY_OPTIONS}
+                  value={drinkingFrequency}
+                  onChange={(e) => setDrinkingFrequency(e.target.value)}
+                />
+                <FormField label="음주량" helper="대략적인 1회 음주량">
                   <input
                     type="text"
-                    placeholder='예: "소주 2병"'
+                    placeholder="예: 소주 2병"
                     value={drinkingAmount}
                     onChange={(e) => setDrinkingAmount(e.target.value)}
                   />
-                  <div className="helper">대략적인 1회 음주량</div>
-                </div>
+                </FormField>
               </>
             )}
 
             {selectedType === "smoking" && (
               <>
-                <div className="form-group">
-                  <label>흡연 기간 (년)</label>
+                <FormField label="흡연 기간 (년)">
                   <input
                     type="number"
                     placeholder="예: 10"
                     value={smokingYears}
                     onChange={(e) => setSmokingYears(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>일일 흡연량 (개비)</label>
+                </FormField>
+                <FormField label="일일 흡연량 (개비)">
                   <input
                     type="number"
                     placeholder="예: 15"
                     value={dailyCigarettes}
                     onChange={(e) => setDailyCigarettes(e.target.value)}
                   />
-                </div>
+                </FormField>
               </>
             )}
 
             {selectedType === "diet" && (
               <>
-                <div className="form-group">
-                  <label>체중 (kg)</label>
+                <FormField label="체중 (kg)">
                   <input
                     type="number"
                     placeholder="예: 70"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>키 (cm)</label>
+                </FormField>
+                <FormField label="키 (cm)">
                   <input
                     type="number"
                     placeholder="예: 170"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
                   />
-                </div>
-                <div className="form-group">
-                  <label>목표</label>
-                  <select
-                    value={dietGoal}
-                    onChange={(e) => setDietGoal(e.target.value)}
-                    style={{
-                      color: dietGoal ? "var(--gray-900)" : "var(--gray-400)",
-                    }}
-                  >
-                    <option value="">선택해주세요</option>
-                    {DIET_GOAL_OPTIONS.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                </FormField>
+                <SelectField
+                  label="목표"
+                  placeholder="선택해주세요"
+                  options={DIET_GOAL_OPTIONS}
+                  value={dietGoal}
+                  onChange={(e) => setDietGoal(e.target.value)}
+                />
               </>
             )}
 
             {selectedType === "custom" && (
-              <>
-                <div className="form-group">
-                  <label>금욕 대상</label>
-                  <input
-                    type="text"
-                    placeholder='예: "카페인", "야식", "SNS"'
-                    value={customLabel}
-                    onChange={(e) => setCustomLabel(e.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>해당 습관 기간 (년, 선택)</label>
-                  <input
-                    type="number"
-                    placeholder="모르면 비워두세요"
-                    value={habitYears}
-                    onChange={(e) => setHabitYears(e.target.value)}
-                  />
-                </div>
-              </>
+              <FormField label="해당 습관 기간 (년, 선택)">
+                <input
+                  type="number"
+                  placeholder="모르면 비워두세요"
+                  value={habitYears}
+                  onChange={(e) => setHabitYears(e.target.value)}
+                />
+              </FormField>
             )}
           </>
         )}
       </div>
 
-      {/* Bottom button */}
-      <div
-        style={{
-          padding: "16px 24px",
-          paddingBottom: 32,
-          background: "var(--white)",
-        }}
-      >
+      <BottomAction>
         {step === 1 ? (
-          <button
-            className="btn btn-primary"
-            disabled={!canProceed}
-            onClick={() => setStep(2)}
-          >
+          <Button disabled={!canProceed} onClick={() => setStep(2)}>
             다음
-          </button>
+          </Button>
         ) : (
-          <button
-            className="btn btn-primary"
-            disabled={!canSubmit || loading}
+          <Button
+            disabled={!canSubmit}
+            loading={loading}
+            loadingText="타임라인 생성 중..."
             onClick={handleSubmit}
           >
-            {loading ? "타임라인 생성 중..." : "타임라인 생성하기"}
-          </button>
+            타임라인 생성하기
+          </Button>
         )}
-      </div>
+      </BottomAction>
     </div>
   );
 }

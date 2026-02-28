@@ -1,0 +1,32 @@
+{
+  "questions": [
+    {
+      "key": "craving",
+      "title": "도파민이 올라왔나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    },
+    {
+      "key": "condition",
+      "title": "전반적인 컨디션은?",
+      "type": "select",
+      "options": [
+        { "label": "좋음", "value": "good" },
+        { "label": "보통", "value": "normal" },
+        { "label": "나쁨", "value": "bad" }
+      ]
+    },
+    {
+      "key": "alternative_activity",
+      "title": "대체 활동을 했나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,10 @@
 import { type FormEvent, useState } from "react";
+import { flushSync } from "react-dom";
 import { Link, useNavigate } from "react-router";
 import { login } from "../api/auth";
 import { useAuth } from "../contexts/AuthContext";
 import { AxiosError } from "axios";
+import { PageHeader, FormField, Button } from "../components/ui";
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -20,7 +22,9 @@ export default function LoginPage() {
 
     try {
       const data = await login(email, password);
-      loginSuccess(data.access_token, data.user);
+      flushSync(() => {
+        loginSuccess(data.access_token, data.user);
+      });
       navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err instanceof AxiosError && err.response?.status === 401) {
@@ -37,14 +41,7 @@ export default function LoginPage() {
 
   return (
     <div className="screen">
-      <div className="auth-header">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gray-700)" strokeWidth="2">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <h2>로그인</h2>
-      </div>
+      <PageHeader title="로그인" onBack variant="auth" />
 
       <form
         className="screen-content"
@@ -62,32 +59,35 @@ export default function LoginPage() {
           </div>
         )}
 
-        <div className="form-group">
-          <label>이메일</label>
+        <FormField label="이메일">
           <input
             type="email"
             placeholder="example@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
+        </FormField>
 
-        <div className="form-group">
-          <label>비밀번호</label>
+        <FormField label="비밀번호">
           <input
             type="password"
             placeholder="비밀번호를 입력해주세요"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
+        </FormField>
 
         <div style={{ flex: 1 }} />
 
         <div>
-          <button className="btn btn-primary" type="submit" disabled={!isValid || loading}>
-            {loading ? "로그인 중..." : "로그인"}
-          </button>
+          <Button
+            type="submit"
+            disabled={!isValid}
+            loading={loading}
+            loadingText="로그인 중..."
+          >
+            로그인
+          </Button>
           <div className="form-link">
             계정이 없으신가요? <Link to="/signup">회원가입</Link>
           </div>

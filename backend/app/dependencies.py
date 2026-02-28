@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import Cookie, Depends, Header, HTTPException
 from jwt import ExpiredSignatureError, InvalidTokenError
 from sqlalchemy.orm import Session
@@ -26,7 +28,7 @@ def get_current_user(
     if user_id is None:
         raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다")
 
-    user = db.get(User, user_id)
+    user = db.get(User, UUID(user_id))
     if user is None:
         raise HTTPException(status_code=401, detail="사용자를 찾을 수 없습니다")
 

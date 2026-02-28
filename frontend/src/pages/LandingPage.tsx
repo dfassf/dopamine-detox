@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
+import { Button } from "../components/ui";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ export default function LandingPage() {
             letterSpacing: -0.5,
           }}
         >
-          restrainter
+          도파민 디톡스
         </h1>
 
         <p
@@ -73,12 +74,12 @@ export default function LandingPage() {
         </p>
 
         <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
-          <button className="btn btn-primary" onClick={() => navigate("/signup")}>
+          <Button onClick={() => navigate("/signup")}>
             시작하기
-          </button>
-          <button className="btn btn-outline" onClick={() => navigate("/login")}>
+          </Button>
+          <Button variant="outline" onClick={() => navigate("/login")}>
             이미 계정이 있어요
-          </button>
+          </Button>
         </div>
 
         <p style={{ marginTop: 24, fontSize: 12, color: "var(--gray-400)", lineHeight: 1.5 }}>

@@ -1,0 +1,42 @@
+{
+  "questions": [
+    {
+      "key": "diet_adherence",
+      "title": "식단을 잘 지켰나요?",
+      "type": "select",
+      "options": [
+        { "label": "잘 지킴", "value": "good" },
+        { "label": "보통", "value": "normal" },
+        { "label": "못 지킴", "value": "bad" }
+      ]
+    },
+    {
+      "key": "exercise",
+      "title": "운동을 했나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    },
+    {
+      "key": "craving",
+      "title": "도파민(폭식 욕구)이 올라왔나요?",
+      "type": "toggle",
+      "options": [
+        { "label": "네", "value": "yes" },
+        { "label": "아니오", "value": "no" }
+      ]
+    },
+    {
+      "key": "sleep_quality",
+      "title": "수면은 어땠나요?",
+      "type": "select",
+      "options": [
+        { "label": "좋음", "value": "good" },
+        { "label": "보통", "value": "normal" },
+        { "label": "나쁨", "value": "bad" }
+      ]
+    }
+  ]
+}
