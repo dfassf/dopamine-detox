@@ -1,0 +1,106 @@
+# ============================================================
+# CI/CD 예시 파일
+# 실제로 작동시키려면 확장자에서 .example을 제거하세요.
+#   mv ci.yml.example ci.yml
+#
+# 필요한 GitHub Secrets:
+#   GCP_PROJECT_ID       — GCP 프로젝트 ID
+#   GCP_SA_KEY           — 서비스 계정 JSON 키
+#   GCP_REGION           — Cloud Run 리전 (예: asia-northeast3)
+#   GEMINI_API_KEY       — Gemini API 키
+#   SECRET_KEY           — JWT 서명 키
+#
+# 프론트엔드 배포:
+#   Vercel에 GitHub 리포가 연동되어 있어 별도 워크플로우 불필요.
+#   main 브랜치 push 시 Vercel이 자동으로 빌드 및 배포합니다.
+#   Preview 배포: PR/feature 브랜치 push 시 자동 생성
+# ============================================================
+
+name: CI/CD
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── 백엔드 테스트 ──────────────────────────────────────────
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: uv 설치
+        uses: astral-sh/setup-uv@v4
+
+      - name: 의존성 설치
+        run: uv sync && uv pip install -e ".[dev]"
+
+      - name: pytest 실행
+        run: uv run pytest --cov=app
+        env:
+          GEMINI_API_KEY: ""
+
+  # ── 프론트엔드 테스트 ──────────────────────────────────────
+  frontend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Node.js 설치
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: TypeScript 타입 체크
+        run: npx tsc -b
+
+      - name: Vitest 단위 테스트
+        run: npm test
+
+  # ── 백엔드 Cloud Run 배포 ──────────────────────────────────
+  deploy-backend:
+    needs: [backend-test, frontend-test]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: GCP 인증
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Cloud SDK 설치
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Cloud Run 배포
+        run: |
+          gcloud run deploy dopamine-detox \
+            --source . \
+            --region ${{ secrets.GCP_REGION }} \
+            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},SECRET_KEY=${{ secrets.SECRET_KEY }}" \
+            --allow-unauthenticated

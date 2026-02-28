@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://dopamine-detox-72964639643.asia-northeast3.run.app/api/:path*"
+    }
+  ]
+}

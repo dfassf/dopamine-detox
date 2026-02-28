@@ -14,3 +14,13 @@ dependencies = [
     "sqlalchemy>=2.0.47",
     "uvicorn[standard]>=0.41.0",
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
