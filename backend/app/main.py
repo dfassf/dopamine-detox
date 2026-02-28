@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-from app.models import *  # noqa: F401, F403
+from app.models import Abstinence, Checkin, TimelineEvent, TimelineStage, User  # noqa: F401
 from app.routers import abstinence, auth, dashboard
 
 Base.metadata.create_all(bind=engine)
