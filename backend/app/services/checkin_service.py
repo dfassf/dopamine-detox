@@ -1,4 +1,5 @@
 import json
+import logging
 from datetime import date, timedelta
 from uuid import UUID
 
@@ -7,29 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import Abstinence, Checkin, TimelineEvent, TimelineStage
+from app.services.gemini_utils import call_gemini, parse_json_response
 
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-
-
-def _call_gemini(prompt: str) -> str:
-    """Gemini REST API 호출."""
-    resp = httpx.post(
-        GEMINI_API_URL,
-        params={"key": settings.GEMINI_API_KEY},
-        json={"contents": [{"parts": [{"text": prompt}]}]},
-        timeout=60.0,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-
-
-def _parse_json_response(text: str) -> dict:
-    """AI 응답에서 JSON 파싱 (마크다운 코드블록 제거)."""
-    if text.startswith("```"):
-        lines = text.split("\n")
-        text = "\n".join(lines[1:-1])
-    return json.loads(text)
+logger = logging.getLogger(__name__)
 
 
 def process_checkin(
@@ -61,7 +42,8 @@ def process_checkin(
     try:
         summary = _adjust_timeline_with_ai(abstinence, checkin, remaining_events, current_day, db)
         return summary
-    except Exception:
+    except (httpx.HTTPStatusError, json.JSONDecodeError, KeyError) as e:
+        logger.warning("체크인 타임라인 재조정 실패: %s", e)
         return "체크인이 기록되었습니다. (타임라인 조정 중 오류가 발생했습니다)"
 
 
@@ -116,8 +98,8 @@ def _adjust_timeline_with_ai(
 예:
 {{"events": [...], "summary": "운동 효과 반영: 본격 변화기 진입이 3일 앞당겨졌습니다."}}"""
 
-    response_text = _call_gemini(prompt)
-    result = _parse_json_response(response_text)
+    response_text = call_gemini(prompt)
+    result = parse_json_response(response_text)
 
     # DB 업데이트
     for adj in result.get("events", []):

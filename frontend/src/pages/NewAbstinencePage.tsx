@@ -1,9 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  createAbstinence,
-  type AbstinenceCreateRequest,
-} from "../api/abstinence";
+import { createAbstinence } from "../api/abstinence";
 import {
   PageHeader,
   FormField,
@@ -11,25 +8,13 @@ import {
   Button,
   BottomAction,
 } from "../components/ui";
-
-const PRESETS = [
-  { type: "alcohol", emoji: "\u{1F37A}", name: "금주" },
-  { type: "smoking", emoji: "\u{1F6AC}", name: "금연" },
-  { type: "diet", emoji: "\u{1F957}", name: "식단" },
-  { type: "custom", emoji: "\u270E\uFE0F", name: "커스텀" },
-] as const;
-
-const FREQUENCY_OPTIONS = [
-  { value: "daily", label: "매일" },
-  { value: "3-5", label: "주 3~5회" },
-  { value: "1-2", label: "주 1~2회" },
-];
-
-const DIET_GOAL_OPTIONS = [
-  { value: "diet", label: "다이어트" },
-  { value: "healthy", label: "건강식 전환" },
-  { value: "other", label: "기타" },
-];
+import {
+  GENDER_OPTIONS,
+  PRESETS,
+  type AbstinenceType,
+} from "./new-abstinence/constants";
+import { buildAbstinenceRequest } from "./new-abstinence/build-request";
+import { AbstinenceTypeFields } from "./new-abstinence/AbstinenceTypeFields";
 
 export default function NewAbstinencePage() {
   const navigate = useNavigate();
@@ -37,39 +22,39 @@ export default function NewAbstinencePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Step 1: 공통
-  const [selectedType, setSelectedType] = useState("alcohol");
+  const [selectedType, setSelectedType] = useState<AbstinenceType>("alcohol");
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [birthYear, setBirthYear] = useState("");
   const [gender, setGender] = useState("");
 
-  // Step 2: 금주
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
   const [drinkingYears, setDrinkingYears] = useState("");
   const [drinkingFrequency, setDrinkingFrequency] = useState("");
   const [drinkingAmount, setDrinkingAmount] = useState("");
-
-  // Step 2: 금연
   const [smokingYears, setSmokingYears] = useState("");
   const [dailyCigarettes, setDailyCigarettes] = useState("");
-
-  // Step 2: 식단
   const [dietGoal, setDietGoal] = useState("");
-
-  // Step 2: 커스텀
   const [customLabel, setCustomLabel] = useState("");
   const [habitYears, setHabitYears] = useState("");
-
   const canProceed =
-    selectedType && startDate && birthYear && gender &&
+    selectedType &&
+    startDate &&
+    birthYear &&
+    gender &&
     (selectedType !== "custom" || customLabel.trim());
 
   const canSubmit = (() => {
     if (selectedType === "alcohol") {
-      return weight && height && drinkingYears && drinkingFrequency && drinkingAmount;
+      return (
+        weight &&
+        height &&
+        drinkingYears &&
+        drinkingFrequency &&
+        drinkingAmount
+      );
     }
     if (selectedType === "smoking") {
       return smokingYears && dailyCigarettes;
@@ -82,38 +67,29 @@ export default function NewAbstinencePage() {
     }
     return false;
   })();
-
   async function handleSubmit() {
     setLoading(true);
     setError("");
 
-    const req: AbstinenceCreateRequest = {
-      type: selectedType,
-      start_date: startDate,
-      birth_year: Number(birthYear),
-      gender,
-    };
-
-    if (selectedType === "alcohol") {
-      req.weight = Number(weight);
-      req.height = Number(height);
-      req.drinking_years = Number(drinkingYears);
-      req.drinking_frequency = drinkingFrequency;
-      req.drinking_amount = drinkingAmount;
-    } else if (selectedType === "smoking") {
-      req.smoking_years = Number(smokingYears);
-      req.daily_cigarettes = Number(dailyCigarettes);
-    } else if (selectedType === "diet") {
-      req.weight = Number(weight);
-      req.height = Number(height);
-      req.diet_goal = dietGoal;
-    } else if (selectedType === "custom") {
-      req.label = customLabel;
-      if (habitYears) req.habit_years = Number(habitYears);
-    }
-
     try {
-      const result = await createAbstinence(req);
+      const result = await createAbstinence(
+        buildAbstinenceRequest({
+          selectedType,
+          startDate,
+          birthYear,
+          gender,
+          weight,
+          height,
+          drinkingYears,
+          drinkingFrequency,
+          drinkingAmount,
+          smokingYears,
+          dailyCigarettes,
+          dietGoal,
+          customLabel,
+          habitYears,
+        })
+      );
       navigate(`/timeline/${result.id}`, { replace: true });
     } catch {
       setError("타임라인 생성에 실패했습니다. 다시 시도해주세요.");
@@ -122,17 +98,29 @@ export default function NewAbstinencePage() {
     }
   }
 
+  const selectedPreset = PRESETS.find((preset) => preset.type === selectedType);
+
   return (
     <div className="screen">
       <PageHeader
-        title={step === 1 ? "디톡스 시작하기" : `${PRESETS.find((p) => p.type === selectedType)?.name} 상세 정보`}
+        title={
+          step === 1
+            ? "디톡스 시작하기"
+            : `${selectedPreset?.name || "디톡스"} 상세 정보`
+        }
         onBack={step === 2 ? () => setStep(1) : true}
-        right={step === 2 ? <span style={{ fontSize: 13, color: "var(--gray-400)" }}>2/2</span> : undefined}
+        right={
+          step === 2 ? (
+            <span style={{ fontSize: 13, color: "var(--gray-400)" }}>2/2</span>
+          ) : undefined
+        }
         small
       />
 
-      {/* Content */}
-      <div className="screen-content" style={{ background: "var(--white)", padding: "0 24px" }}>
+      <div
+        className="screen-content"
+        style={{ background: "var(--white)", padding: "0 24px" }}
+      >
         {step === 1 ? (
           <>
             <div
@@ -147,7 +135,6 @@ export default function NewAbstinencePage() {
               무엇을 디톡스하시나요?
             </div>
 
-            {/* Preset Grid */}
             <div
               style={{
                 display: "grid",
@@ -156,10 +143,10 @@ export default function NewAbstinencePage() {
                 marginBottom: 28,
               }}
             >
-              {PRESETS.map((p) => (
+              {PRESETS.map((preset) => (
                 <button
-                  key={p.type}
-                  onClick={() => setSelectedType(p.type)}
+                  key={preset.type}
+                  onClick={() => setSelectedType(preset.type)}
                   style={{
                     display: "flex",
                     flexDirection: "column",
@@ -168,35 +155,34 @@ export default function NewAbstinencePage() {
                     padding: "18px 12px",
                     borderRadius: 14,
                     border:
-                      selectedType === p.type
+                      selectedType === preset.type
                         ? "2px solid var(--primary)"
                         : "1.5px solid var(--gray-200)",
                     background:
-                      selectedType === p.type
+                      selectedType === preset.type
                         ? "var(--primary-light)"
                         : "var(--white)",
                     cursor: "pointer",
                     transition: "all 0.15s",
                   }}
                 >
-                  <span style={{ fontSize: 28 }}>{p.emoji}</span>
+                  <span style={{ fontSize: 28 }}>{preset.emoji}</span>
                   <span
                     style={{
                       fontSize: 14,
                       fontWeight: 600,
                       color:
-                        selectedType === p.type
+                        selectedType === preset.type
                           ? "var(--primary-dark)"
                           : "var(--gray-700)",
                     }}
                   >
-                    {p.name}
+                    {preset.name}
                   </span>
                 </button>
               ))}
             </div>
 
-            {/* 커스텀 이름 입력 */}
             {selectedType === "custom" && (
               <FormField label="디톡스 대상">
                 <input
@@ -208,7 +194,6 @@ export default function NewAbstinencePage() {
               </FormField>
             )}
 
-            {/* Common fields */}
             <FormField label="시작일">
               <input
                 type="date"
@@ -227,17 +212,13 @@ export default function NewAbstinencePage() {
             <SelectField
               label="성별"
               placeholder="선택해주세요"
-              options={[
-                { value: "male", label: "남성" },
-                { value: "female", label: "여성" },
-              ]}
+              options={GENDER_OPTIONS}
               value={gender}
               onChange={(e) => setGender(e.target.value)}
             />
           </>
         ) : (
           <>
-            {/* Info banner */}
             <div
               style={{
                 background: "var(--primary-light)",
@@ -268,110 +249,27 @@ export default function NewAbstinencePage() {
 
             {error && <div className="error-toast">{error}</div>}
 
-            {/* Type-specific fields */}
-            {selectedType === "alcohol" && (
-              <>
-                <FormField label="체중 (kg)">
-                  <input
-                    type="number"
-                    placeholder="예: 87"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="키 (cm)">
-                  <input
-                    type="number"
-                    placeholder="예: 175"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="음주 기간 (년)">
-                  <input
-                    type="number"
-                    placeholder="예: 10"
-                    value={drinkingYears}
-                    onChange={(e) => setDrinkingYears(e.target.value)}
-                  />
-                </FormField>
-                <SelectField
-                  label="음주 빈도"
-                  placeholder="선택해주세요"
-                  options={FREQUENCY_OPTIONS}
-                  value={drinkingFrequency}
-                  onChange={(e) => setDrinkingFrequency(e.target.value)}
-                />
-                <FormField label="음주량" helper="대략적인 1회 음주량">
-                  <input
-                    type="text"
-                    placeholder="예: 소주 2병"
-                    value={drinkingAmount}
-                    onChange={(e) => setDrinkingAmount(e.target.value)}
-                  />
-                </FormField>
-              </>
-            )}
-
-            {selectedType === "smoking" && (
-              <>
-                <FormField label="흡연 기간 (년)">
-                  <input
-                    type="number"
-                    placeholder="예: 10"
-                    value={smokingYears}
-                    onChange={(e) => setSmokingYears(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="일일 흡연량 (개비)">
-                  <input
-                    type="number"
-                    placeholder="예: 15"
-                    value={dailyCigarettes}
-                    onChange={(e) => setDailyCigarettes(e.target.value)}
-                  />
-                </FormField>
-              </>
-            )}
-
-            {selectedType === "diet" && (
-              <>
-                <FormField label="체중 (kg)">
-                  <input
-                    type="number"
-                    placeholder="예: 70"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                  />
-                </FormField>
-                <FormField label="키 (cm)">
-                  <input
-                    type="number"
-                    placeholder="예: 170"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                  />
-                </FormField>
-                <SelectField
-                  label="목표"
-                  placeholder="선택해주세요"
-                  options={DIET_GOAL_OPTIONS}
-                  value={dietGoal}
-                  onChange={(e) => setDietGoal(e.target.value)}
-                />
-              </>
-            )}
-
-            {selectedType === "custom" && (
-              <FormField label="해당 습관 기간 (년, 선택)">
-                <input
-                  type="number"
-                  placeholder="모르면 비워두세요"
-                  value={habitYears}
-                  onChange={(e) => setHabitYears(e.target.value)}
-                />
-              </FormField>
-            )}
+            <AbstinenceTypeFields
+              selectedType={selectedType}
+              weight={weight}
+              height={height}
+              drinkingYears={drinkingYears}
+              drinkingFrequency={drinkingFrequency}
+              drinkingAmount={drinkingAmount}
+              smokingYears={smokingYears}
+              dailyCigarettes={dailyCigarettes}
+              dietGoal={dietGoal}
+              habitYears={habitYears}
+              onWeightChange={setWeight}
+              onHeightChange={setHeight}
+              onDrinkingYearsChange={setDrinkingYears}
+              onDrinkingFrequencyChange={setDrinkingFrequency}
+              onDrinkingAmountChange={setDrinkingAmount}
+              onSmokingYearsChange={setSmokingYears}
+              onDailyCigarettesChange={setDailyCigarettes}
+              onDietGoalChange={setDietGoal}
+              onHabitYearsChange={setHabitYears}
+            />
           </>
         )}
       </div>

@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 import httpx
@@ -6,10 +7,11 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.models import Abstinence, TimelineEvent, TimelineStage
+from app.services.gemini_utils import call_gemini, parse_json_response
+
+logger = logging.getLogger(__name__)
 
 TIMELINES_DIR = Path(__file__).parent.parent / "data" / "timelines"
-
-GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
 
 TEMPLATE_MAP = {
     "alcohol": "alcohol.json",
@@ -120,27 +122,6 @@ def _build_ai_prompt(template: dict, config: dict, abstinence_type: str, birth_y
 {template_json}"""
 
 
-def _call_gemini(prompt: str) -> str:
-    """Gemini REST API 호출."""
-    resp = httpx.post(
-        GEMINI_API_URL,
-        params={"key": settings.GEMINI_API_KEY},
-        json={"contents": [{"parts": [{"text": prompt}]}]},
-        timeout=60.0,
-    )
-    resp.raise_for_status()
-    data = resp.json()
-    return data["candidates"][0]["content"]["parts"][0]["text"].strip()
-
-
-def _parse_json_response(text: str) -> dict:
-    """AI 응답에서 JSON 파싱 (마크다운 코드블록 제거)."""
-    if text.startswith("```"):
-        lines = text.split("\n")
-        text = "\n".join(lines[1:-1])
-    return json.loads(text)
-
-
 def generate_timeline(
     abstinence: Abstinence,
     config: dict,
@@ -164,9 +145,10 @@ def generate_timeline(
     if settings.GEMINI_API_KEY:
         try:
             prompt = _build_ai_prompt(filtered_template, config, abstinence.type, birth_year, gender)
-            response_text = _call_gemini(prompt)
-            personalized = _parse_json_response(response_text)
-        except Exception:
+            response_text = call_gemini(prompt)
+            personalized = parse_json_response(response_text)
+        except (httpx.HTTPStatusError, json.JSONDecodeError, KeyError) as e:
+            logger.warning("타임라인 AI 개인화 실패, 기본 템플릿 사용: %s", e)
             personalized = filtered_template
 
     # 3. DB 저장
